@@ -1,0 +1,42 @@
+description: "在指定的服务器上，安装flume"
+operations:
+- name: "上传flume"
+  description: "上传flume"
+  commands:
+  - "xc_upload -d ${base_home} ${modules.flume.pkg}"
+  enabled: false
+- name: "解压flume安装包"
+  description: "解压flume安装包"
+  commands:
+  - "x_untar -s ${base_home}/${modules.flume.pkg} -t ${base_home}/flume"
+  enabled: false
+- name: "配置flume-env.sh"
+  description: "配置flume-env.sh"
+  commands:
+  - "cp ${base_home}/flume/conf/flume-env.sh.template ${base_home}/flume/conf/flume-env.sh"
+  - "x_edit -t kv -p ${base_home}/flume/conf/flume-env.sh -d \"export JAVA_HOME=${java_home}\""
+  enabled: false
+- name: "上传代理配置"
+  description: "将 flume 的代理配置上传至zookeeper"
+  commands:
+  - "xc1_to_zk -s ${:let result = \"\" ;for x in hosts {if(include(x.deployModuleNames, \"zookeeper\")){result = result + x.ip + \":2181,\" ;}}result=string.substring(result,0,string.length(result)-1);result}\
+    \ flume/zk_dir.yaml"
+  enabled: false
+- name: "创建启动脚本"
+  description: "运行代理"
+  commands:
+  - "touch ${base_home}/flume/bin/start_app_log.sh"
+  - "chmod 755 ${base_home}/flume/bin/start_app_log.sh"
+  - "echo \"nohup ./flume-ng agent -c conf -z ${:let result = \"\" ;for x in hosts{if(include(x.deployModuleNames, \"zookeeper\")){result = result + x.name + \":2181,\";}}result=string.substring(result,0,string.length(result)-1);result}\
+    \ -p /flume -name app_log -Dflume.root.logger=INFO,console  > ${base_home}/flume/bin/app_log.log\
+    \ 2>&1 &\" > ${base_home}/flume/bin/start_app_log.sh"
+  enabled: true
+- name: "运行代理"
+  description: "运行代理"
+  commands:
+  - "cd ${base_home}/flume/bin && ./start_app_log.sh"
+  enabled: true
+modules:
+- "flume"
+catalog: "06_flume日志采集"
+name: "10_0_flume_安装"

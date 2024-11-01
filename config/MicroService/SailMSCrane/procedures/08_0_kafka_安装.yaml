@@ -1,0 +1,32 @@
+description: "在指定的服务器上，安装kafka"
+operations:
+- name: "上传kafka"
+  description: "上传kafka"
+  commands:
+  - "xc_upload -d ${base_home} ${modules.kafka.pkg}"
+  enabled: false
+- name: "解压kafka安装包"
+  description: "解压kafka安装包"
+  commands:
+  - "x_untar -s ${base_home}/${modules.kafka.pkg} -t ${base_home}/kafka"
+  enabled: true
+- name: "配置server.properties"
+  description: "配置server.properties"
+  commands:
+  - "x_edit -t kv -p ${base_home}/kafka/config/server.properties -d \"broker.id=${host.seq}\ 
+    \ & port=9092\
+    \ & log.dirs=${data_home}/kafka/logs/ \
+    \ & zookeeper.connect=${:let result=\"\" ;for x in hosts {if(include(x.deployModuleNames, \"zookeeper\")){result = result + x.name + \":2181,\";}}result=string.substring(result,0,string.length(result)-1) + \"/kafka\";result} \
+    \ & num.partitions=3 \
+    \ & log.retention.hours=168 \
+    \ & log.cleanup.polict=delete \""
+  enabled: true
+- name: "运行kafka"
+  description: "运行kafka"
+  commands:
+  - "${base_home}/kafka/bin/kafka-server-start.sh -daemon ${base_home}/kafka/config/server.properties"
+  enabled: true
+modules:
+- "kafka"
+catalog: "04_kafka"
+name: "08_0_kafka_安装"

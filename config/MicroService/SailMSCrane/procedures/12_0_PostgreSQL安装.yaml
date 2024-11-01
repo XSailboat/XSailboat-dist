@@ -1,0 +1,69 @@
+description: "在指定的服务器上，安装postgresql"
+operations:
+- name: "上传 postgresql"
+  description: "上传 postgresql"
+  commands:
+  - "xc_upload -d ${base_home} ${modules.postgreSql.pkg}"
+  enabled: false
+- name: "解压 postgresql 安装包"
+  description: "解压 postgresql 安装包"
+  commands:
+  - "x_untar -s ${base_home}/${modules.postgreSql.pkg} -t ${base_home}/PG -e src"
+  - "chmod -R 755 ${base_home}/PG"
+  enabled: true
+- name: "编译安装pg库"
+  description: "编译安装pg库"
+  commands:
+  - "x_su -u root -p ${host.adminPswd}"
+  - "cd ${base_home}/PG && make install"
+  enabled: true
+- name: "修改所有者"
+  description: "修改所有者"
+  commands:
+  - "x_su -u root -p ${host.adminPswd}"
+  - "chown -R ${host.sysUser}:${host.sysUser} ${base_home}/pgsql"
+  enabled: true
+- name: "添加 PG 库环境变量"
+  description: "将 PG 库添加到环境变量"
+  commands:
+  - "x_add_envs \"PG_HOME=${base_home}/pgsql PATH=$PATH:$PG_HOME/bin\""
+  enabled: true
+- name: "初始化数据库"
+  description: "创建数据库的表空间目录，并初始化"
+  commands:
+  - "mkdir -p ${data_home}/postgresql/data"
+  - "cd ${base_home}/pgsql/bin && ./initdb -D ${data_home}/postgresql/data"
+  enabled: true
+- name: "访问控制"
+  description: "修改数据库的访问控制配置"
+  commands:
+  - "echo \"# start:IPv4 local connections:\" >> ${data_home}/postgresql/data/pg_hba.conf"
+  - "echo \"host    all    all   0.0.0.0/0   md5\"  >> ${data_home}/postgresql/data/pg_hba.conf"
+  enabled: true
+- name: "修改postgresql.conf"
+  description: "修改postgresql.conf"
+  commands:
+  - "x_edit -t kv -p ${data_home}/postgresql/data/postgresql.conf -d \"listen_addresses\
+    \ = '*'\""
+  enabled: true
+- name: "创建log文件"
+  description: "创建log目录及server.log文件，用于存放数据库的启动日志"
+  commands:
+  - "mkdir -p ${base_home}/pgsql/log"
+  - "touch ${base_home}/pgsql/log/server.log"
+  enabled: true
+- name: "启动数据库"
+  description: "启动数据库"
+  commands:
+  - "cd ${base_home}/pgsql/bin && ./pg_ctl -D ${data_home}/postgresql/data -l ${base_home}/pgsql/log/server.log\
+    \ start"
+  enabled: true
+- name: "创建默认数据库"
+  description: "初始化时，并没有建立相应的数据库，所以登录前，首先要新建超级用户同名数据库"
+  commands:
+  - "cd ${base_home}/pgsql/bin && ./createdb --port=5432 ${host.sysUser}"
+  enabled: true
+modules:
+- "postgresql"
+catalog: "08_PostgreSql数据库"
+name: "12_0_PostgreSQL安装"

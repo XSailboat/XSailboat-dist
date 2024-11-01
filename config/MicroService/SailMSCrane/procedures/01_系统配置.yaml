@@ -1,0 +1,47 @@
+description: "对整个平台的主机进行初始化设置"
+operations:
+- name: "关闭IPv6"
+  description: "关闭IPv6，只使用IPv4"
+  commands:
+  - "x_close ipv6"
+  enabled: true
+- name: "关闭虚拟网卡"
+  description: "关闭虚拟网卡，避免多网卡造成IP问题"
+  commands:
+  - "x_close v_network"
+  enabled: true
+- name: "添加 主机-IP 映射"
+  description: "添加 主机-IP 映射"
+  commands:
+  - "x_add_hosts \"${all_ip_host}\""
+  enabled: true
+- name: "关闭防火墙"
+  description: "关闭firewalld防火墙"
+  commands:
+  - "x_close firewall"
+  enabled: true
+- name: "修改文件最大句柄"
+  description: "修改文件最大句柄"
+  commands:
+  - "x_set_limit \"* soft nofile ${soft_nofile} * hard nofile ${hard_nofile} * soft\
+    \ noproc ${soft_noproc} * hard noproc ${hard_noproc}\""
+  enabled: true
+- name: "关闭SELinux"
+  description: "关闭SELinux"
+  commands:
+  - "x_close selinux"
+  enabled: true
+- name: "SSH无密码登录"
+  description: "SSH无密码登录"
+  commands:
+  - "x_add_ssh ${:let result = \"\" ;for x in hosts { result = result + x.sysUser + \"@\" + x.name + \"@\" + x.sysPswd + \" \";}result}"
+  enabled: true
+- name: "重启系统"
+  description: "切换root用户，重启系统"
+  commands:
+  - "x_su -u root -p ${host.adminPswd}"
+  - "reboot"
+  enabled: true
+modules:
+- "ALL"
+catalog: "01_系统环境"

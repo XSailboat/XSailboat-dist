@@ -1,0 +1,97 @@
+description: "在指定的服务器上，安装TDengine"
+operations:
+- name: "上传TDengine"
+  description: "上传TDengine"
+  commands:
+  - "xc_upload -d ${base_home} ${modules.tdengine_firstEp.pkg}"
+  enabled: false
+- name: "解压TDengine安装包"
+  description: "解压TDengine安装包"
+  commands:
+  - "x_untar -s ${base_home}/${modules.tdengine_firstEp.pkg} -t ${base_home}/TDengine"
+  enabled: true
+- name: "修改安装脚本"
+  description: "修改安装脚本"
+  commands:
+  - "x_edit -t kv -p ${base_home}/TDengine/install.sh -d \"tarName=\\\"${base_home}/TDengine/taos.tar.gz\\\
+    \"\""
+  - "chmod 755 -R ${base_home}/TDengine"
+  enabled: true
+- name: "安装 TDengine"
+  description: "切换管理员用户,安装 TDengine"
+  commands:
+  - "x_su -u root -p ${host.adminPswd}"
+  - "cd ${base_home}/TDengine && ./install.sh && x_expect_err -w 5 -s \"Created symlink\""
+  enabled: true
+- name: "移除系统服务"
+  description: "切换管理员用户,移除系统服务"
+  commands:
+  - "x_su -u root -p ${host.adminPswd}"
+  - "systemctl disable taosadapter"
+  - "systemctl disable taosd"
+  enabled: true
+- name: "移除默认目录"
+  description: "切换管理员用户,移除默认目录"
+  commands:
+  - "x_su -u root -p ${host.adminPswd}"
+  - "rm -rf /var/lib/taos"
+  - "rm -rf /var/log/taos"
+  - "rm -rf /usr/local/taos/data"
+  - "rm -rf /usr/local/taos/log"
+  enabled: true
+- name: "修改所有者"
+  description: "修改所有者"
+  commands:
+  - "x_su -u root -p ${host.adminPswd}"
+  - "chown -R ${host.sysUser}:${host.sysUser} /usr/local/taos"
+  - "chown -R ${host.sysUser}:${host.sysUser} /etc/taos"
+  enabled: true
+- name: "修改配置"
+  description: "修改配置"
+  commands:
+  - "x_edit -t kv-s -p /etc/taos/taos.cfg -d \"  firstEp=${:let result = \"\";for\
+    \ x in hosts {if(include(x.deployModuleNames, \"tdengine_firstEp\")){result= result\
+    \ + x.name + \":6030\";}}result} & secondEp=${:let result = \"\";for x in hosts\
+    \ {if(include(x.deployModuleNames, \"tdengine_secondEp\")){result= result + x.name\
+    \ + \":6030\";}}result} & fqdn=${host.name} & logDir=${data_home}/taos/log & dataDir=${data_home}/taos/data\
+    \ & numofMnodes=3 & replica=2\""
+  enabled: true
+- name: "目录规划"
+  description: "目录规划"
+  commands:
+  - "mkdir -p ${data_home}/taos/log"
+  - "mkdir -p ${data_home}/taos/data"
+  enabled: true
+- name: "创建软链接"
+  description: "创建软链接"
+  commands:
+  - "ln -s ${data_home}/taos/log /usr/local/taos/log"
+  - "ln -s ${data_home}/taos/data /usr/local/taos/data"
+  enabled: true
+- name: "运行taos"
+  description: "运行taos"
+  commands:
+  - "touch /usr/local/taos/bin/start_taosd.sh"
+  - "touch /usr/local/taos/bin/start_taosadapter.sh"
+  - "chmod 755 /usr/local/taos/bin/start_taosd.sh"
+  - "chmod 755 /usr/local/taos/bin/start_taosadapter.sh"
+  - "echo \"nohup /usr/local/taos/bin/taosd > /usr/local/taos/bin/taosd.log 2>&1 &\"\
+    \ > /usr/local/taos/bin/start_taosd.sh"
+  - "echo \"nohup /usr/local/taos/bin/taosadapter > /usr/local/taos/bin/taosadapter.log\
+    \ 2>&1 &\" > /usr/local/taos/bin/start_taosadapter.sh"
+  - "/usr/local/taos/bin/start_taosd.sh"
+  - "/usr/local/taos/bin/start_taosadapter.sh"
+  - "x_connect \"6035 6030 6040 6041\""
+  enabled: true
+- name: "移除安装包目录"
+  description: "移除安装包目录"
+  commands:
+  - "x_su -u root -p ${host.adminPswd}"
+  - "rm -rf ${base_home}/TDengine"
+  enabled: true
+modules:
+- "tdengine_firstEp"
+- "tdengine_secondEp"
+- "tdengine_other"
+catalog: "05_TDengine"
+name: "09_0_TDengine_安装"

@@ -1,0 +1,20 @@
+description: "在指定的服务器上，初始化hdfs，运行主namenode"
+operations:
+- name: "初始化hdfs"
+  description: "在主namenode节点上，初始化hdfs，该操作只能执行一次，重复执行会导致版本冲突,.hdfs_init用于标记是否执行过初始化"
+  commands:
+  - "x_flag get ${base_home}/hadoop/.hdfs_init"
+  - "${base_home}/hadoop/bin/hadoop namenode -format"
+  - "x_contain"
+  - "x_flag set ${base_home}/hadoop/.hdfs_init"
+  enabled: true
+- name: "运行主namenode"
+  description: "运行主namenode"
+  commands:
+  - "${base_home}/hadoop/bin/hdfs --daemon start namenode"
+  - "x_connect \"9000 50070\""
+  enabled: true
+modules:
+- "hdfs_主namenode"
+catalog: "03_hadoop生态圈"
+name: "04_2_hadoop_运行主namenode"

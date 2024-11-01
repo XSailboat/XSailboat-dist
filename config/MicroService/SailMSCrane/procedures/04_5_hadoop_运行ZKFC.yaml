@@ -1,0 +1,12 @@
+description: "在指定的服务器上，运行ZKFC"
+operations:
+- name: "运行ZKFC"
+  description: "运行ZKFC"
+  commands:
+  - "${base_home}/hadoop/bin/hdfs --daemon start zkfc"
+  - "x_connect \"8019\""
+  enabled: true
+modules:
+- "hdfs_zkfc"
+catalog: "03_hadoop生态圈"
+name: "04_5_hadoop_运行ZKFC"

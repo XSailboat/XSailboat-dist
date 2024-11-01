@@ -1,0 +1,12 @@
+description: "在指定的服务器上，运行datanode"
+operations:
+- name: "运行Datanode"
+  description: "运行Datanode"
+  commands:
+  - "${base_home}/hadoop/bin/hdfs --daemon start datanode"
+  - "x_connect \"9864 9866 9867\""
+  enabled: true
+modules:
+- "hdfs_datanode"
+catalog: "03_hadoop生态圈"
+name: "04_6_hadoop_运行DataNode"

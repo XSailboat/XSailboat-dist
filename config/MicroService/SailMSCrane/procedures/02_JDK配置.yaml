@@ -1,0 +1,34 @@
+description: "对整个平台的主机进行JDK安装"
+operations:
+- name: "上传JDK"
+  description: "确保jdk产品目录存在，并上传JDK"
+  commands:
+  - "mkdir -p ${java_home}"
+  - "xc_upload -d ${java_home} ${modules.jdk.pkg}"
+  enabled: false
+- name: "解压JDK"
+  description: "将数据目录中的JDK安装包，解压到JDK的安装目录"
+  commands:
+  - "x_untar -s ${java_home}/${modules.jdk.pkg} -t ${java_home} -e bin"
+  - "chmod -R 755 ${java_home}"
+  enabled: true
+- name: "修改系统用户.bashrc配置"
+  description: "修改用户.bashrc配置，使每次切换用户时，执行source /etc/profile"
+  commands:
+  - "x_edit -t kv-s -p /home/${host.sysUser}/.bashrc -d \"source=/etc/profile\""
+  enabled: true
+- name: "切换root用户,修改.bashrc配置"
+  description: "切换root用户，修改.bashrc配置,使每次切换用户时，执行source /etc/profile"
+  commands:
+  - "x_su -u root -p ${host.adminPswd}"
+  - "x_edit -t kv-s -p /root/.bashrc -d \"source=/etc/profile\""
+  enabled: true
+- name: "添加jdk环境变量"
+  description: "将jdk添加到环境变量"
+  commands:
+  - "x_add_envs \"JAVA_HOME=${java_home} PATH=$PATH:$JAVA_HOME/bin\""
+  enabled: true
+modules:
+- "jdk"
+catalog: "02_java环境"
+name: "02_JDK配置"

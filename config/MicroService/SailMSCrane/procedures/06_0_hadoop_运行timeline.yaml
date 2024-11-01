@@ -1,0 +1,32 @@
+description: "在指定的服务器上，安装timelineserver"
+operations:
+- name: "启用协处理器"
+  description: "启用协处理器"
+  commands:
+  - "hadoop fs -mkdir -p /user/hbase/coprocessor"
+  - "${base_home}/hadoop/bin/hadoop fs -put ${base_home}/hadoop/share/hadoop/yarn/timelineservice/hadoop-yarn-server-timelineservice-hbase-server-2-3.2.2-coprocessor.jar\
+    \ /user/hbase/coprocessor/hadoop-yarn-server-timelineservice.jar"
+  enabled: true
+- name: "创建命名空间"
+  description: "创建命名空间"
+  commands:
+  - "touch ${base_home}/hbase/bin/commands.txt"
+  - "echo \"create_namespace 'yarn'\" > ${base_home}/hbase/bin/commands.txt"
+  - "hbase shell < ${base_home}/hbase/bin/commands.txt"
+  enabled: true
+- name: "创建模式"
+  description: "创建模式"
+  commands:
+  - "${base_home}/hbase/bin/hbase org.apache.hadoop.yarn.server.timelineservice.storage.TimelineSchemaCreator\
+    \ -create"
+  enabled: true
+- name: "运行 timelinereader"
+  description: "运行 timelinereader"
+  commands:
+  - "${base_home}/hadoop/bin/yarn --daemon start timelinereader"
+  - "x_connect \"8188\""
+  enabled: true
+modules:
+- "yarn_timelineserver"
+catalog: "03_hadoop生态圈"
+name: "06_0_hadoop_运行timeline"

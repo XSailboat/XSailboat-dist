@@ -1,0 +1,35 @@
+description: "主机规划、包括主机名修正、平台用户创建、代理运行用户切换、基础配置上传等"
+operations:
+- name: "主机名修正"
+  description: "临时修改主机名，使主机名在当前会话中生效；修改配置文件，重启后主机名永久生效"
+  commands:
+  - "hostname ${host.name}"
+  - "x_set_hostname \"${host.name}\""
+  enabled: true
+- name: "创建平台用户"
+  description: "如果用户已经存在也表示创建成功，如果不存在则会创建"
+  commands:
+  - "x_create_user -u ${host.sysUser} -p ${host.sysPswd}"
+  enabled: true
+- name: "上传配置信息"
+  description: "上传配置信息"
+  commands:
+  - "x_set_host_profile {\\\"ip\\\":\\\"${host.ip}\\\",\\\"name\\\":\\\"${host.name}\\\
+    \",\\\"adminUser\\\":\\\"${host.adminUser}\\\",\\\"adminPswd\\\":\\\"${host.adminPswd}\\\"\
+    ,\\\"sysUser\\\":\\\"${host.sysUser}\\\",\\\"sysPswd\\\":\\\"${host.sysPswd}\\\",\\\"deployModuleNames\\\
+    \":[]}"
+  enabled: true
+- name: "切换代理所有者"
+  description: "切换代理所有者"
+  commands:
+  - "chown -R ${host.sysUser}:${host.sysUser} /xcloud"
+  enabled: true
+- name: "重启代理"
+  description: "重启代理"
+  commands:
+  - "x_restart"
+  enabled: true
+modules:
+- "ALL"
+catalog: "00_主机规划"
+name: "00_主机规划"

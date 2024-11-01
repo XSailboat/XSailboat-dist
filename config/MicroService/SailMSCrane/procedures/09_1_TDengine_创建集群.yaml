@@ -1,0 +1,16 @@
+description: "在TDengine的first节点上，登录taos，将子节点添加到集群中"
+operations:
+- name: "创建集群"
+  description: "创建集群"
+  commands:
+  - "x_sql -t taos -u root -p taosdata"
+  - "create dnode '${:let result = \"\";for x in hosts {if(include(x.deployModuleNames, \"tdengine_secondEp\")){result = result + x.name;}}result}';"
+  - "${:let result = \"\";for x in hosts {if(include(x.deployModuleNames, \"tdengine_other\")){result = result + \"create dnode '\" +  x.name + \"'; \";}}result}"
+  enabled: true
+modules:
+- "tdengine_firstEp"
+catalog: "05_TDengine"
+name: "09_1_TDengine_安装"
+
+
+

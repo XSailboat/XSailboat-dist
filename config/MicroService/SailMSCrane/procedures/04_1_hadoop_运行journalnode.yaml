@@ -1,0 +1,12 @@
+description: "在指定的服务器上，运行journalnode"
+operations:
+- name: "运行journalnode"
+  description: "运行journalnode"
+  commands:
+  - "${base_home}/hadoop/bin/hdfs --daemon start journalnode"
+  - "x_connect \"8485 8480\""
+  enabled: true
+modules:
+- "hdfs_journalnode"
+catalog: "03_hadoop生态圈"
+name: "04_1_hadoop_运行journalnode"

@@ -1,0 +1,42 @@
+description: "在指定的服务器上，安装zookeeper"
+operations:
+- name: "上传zookeeper"
+  description: "确保基础设施目录存在，并上传zookeeper"
+  commands:
+  - "mkdir -p ${base_home}"
+  - "xc_upload -d ${base_home} ${modules.zookeeper.pkg}"
+  enabled: false
+- name: "解压zookeeper安装包"
+  description: "解压zookeeper安装包"
+  commands:
+  - "x_untar -s ${base_home}/${modules.zookeeper.pkg} -t ${base_home}/zookeeper -e bin"
+  enabled: true
+- name: "添加zookeeper环境变量"
+  description: "将zookeeper添加到环境变量"
+  commands:
+  - "x_add_envs \"ZOOKEEPER_HOME=${base_home}/zookeeper PATH=$PATH:$ZOOKEEPER_HOME/bin:$ZOOKEEPER_HOME/conf\""
+  enabled: true
+- name: "配置myid"
+  description: "确保zookeeper数据目录存在，创建并配置myid"
+  commands:
+  - "mkdir -p ${data_home}/zookeeper/tmp"
+  - "touch ${data_home}/zookeeper/tmp/myid"
+  - "echo ${host.seq} > ${data_home}/zookeeper/tmp/myid"
+  enabled: true
+- name: "配置zoo.cfg"
+  description: "配置zoo.cfg"
+  commands:
+  - "cp ${base_home}/zookeeper/conf/zoo_sample.cfg ${base_home}/zookeeper/conf/zoo.cfg"
+  - "x_edit -t kv -p ${base_home}/zookeeper/conf/zoo.cfg -d \"dataDir=${data_home}/zookeeper/tmp ${:let result = \"\";for x in hosts {if(include(x.deployModuleNames, \"zookeeper\")){ result = result + \"& server.\" + x.seq + \"=\" + x.name + \":2888:3888\" ;}}result}\""
+  enabled: true
+- name: "运行zookeeper"
+  description: "运行zookeeper"
+  commands:
+  - "chmod -R 755 ${base_home}/zookeeper"
+  - "${base_home}/zookeeper/bin/zkServer.sh start"
+  - "x_connect \"2181 3888\""
+  enabled: true
+modules:
+- "zookeeper"
+catalog: "03_hadoop生态圈"
+name: "03_zookeeper配置"

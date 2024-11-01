@@ -1,0 +1,42 @@
+description: "为postgresql数据库，安装pg_bigm插件"
+operations:
+- name: "上传 pg_bigm"
+  description: "上传 pg_bigm"
+  commands:
+  - "xc_upload -d ${base_home} ${modules.pg_bigm.pkg}"
+  enabled: false
+- name: "解压 pg_bigm 安装包"
+  description: "解压 pg_bigm 安装包"
+  commands:
+  - "x_unzip -s ${base_home}/${modules.pg_bigm.pkg} -t ${base_home}/pg_bigm-master\
+    \ -e sql"
+  - "chmod -R 755 ${base_home}/pg_bigm-master"
+  enabled: true
+- name: "编译 pg_bigm"
+  description: "编译 pg_bigm"
+  commands:
+  - "cd ${base_home}/pg_bigm-master && make USE_PGXS=1 PG_CONFIG=${base_home}/pgsql/bin/pg_config"
+  enabled: true
+- name: "安装 pg_bigm"
+  description: "安装 pg_bigm"
+  commands:
+  - "x_su -u root -p ${host.adminPswd}"
+  - "cd ${base_home}/pg_bigm-master && make USE_PGXS=1 PG_CONFIG=${base_home}/pgsql/bin/pg_config\
+    \ install"
+  enabled: true
+- name: "修改主配置文件"
+  description: "修改主配置文件 postgresql.conf"
+  commands:
+  - "x_edit -t kv -p ${data_home}/postgresql/data/postgresql.conf -d \"shared_preload_libraries\
+    \ = 'pg_bigm'\""
+  enabled: true
+- name: "重启数据库"
+  description: "重启数据库"
+  commands:
+  - "cd ${base_home}/pgsql/bin && ./pg_ctl -D ${data_home}/postgresql/data -l ${base_home}/pgsql/log/server.log\
+    \ restart"
+  enabled: true
+modules:
+- "postgresql"
+catalog: "08_PostgreSql数据库"
+name: "12_1_pg_bigm安装"

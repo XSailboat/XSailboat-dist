@@ -1,0 +1,67 @@
+description: "在指定的服务器上，安装telegraf"
+operations:
+- name: "上传telegraf"
+  description: "上传telegraf"
+  commands:
+  - "xc_upload -d ${base_home} ${modules.telegraf.pkg}"
+  enabled: false
+- name: "安装telegraf"
+  description: "安装telegraf"
+  commands:
+  - "x_su -u root -p ${host.adminPswd}"
+  - "cd ${base_home} && rpm -ivh ${modules.telegraf.pkg}"
+  enabled: true
+- name: "修改所有者"
+  description: "修改所有者"
+  commands:
+  - "x_su -u root -p ${host.adminPswd}"
+  - "chown -R hadoop:hadoop /etc/telegraf"
+  enabled: true
+- name: "备份配置"
+  description: "备份配置"
+  commands:
+  - "cp /etc/telegraf/telegraf.conf /etc/telegraf/telegraf.conf.backup"
+  - "echo > /etc/telegraf/telegraf.conf"
+  enabled: true
+- name: "修改配置"
+  description: "修改配置"
+  commands:
+  - "x_edit -t kv-tag -p /etc/telegraf/telegraf.conf -d \"[agent].interval = \\\"10s\\\" \
+    \ & [agent].round_interval = true  \
+    \ & [agent].metric_batch_size = 30  \
+    \ & [agent].metric_buffer_limit = 10000  \
+    \ & [agent].collection_jitter = \\\"0s\\\"  \
+    \ & [agent].flush_interval = \\\"10s\\\"  \
+    \ & [agent].flush_jitter = \\\"0s\\\"  \
+    \ & [agent].precision = \\\"ms\\\"  \
+    \ & [agent].debug = true  \
+    \ & [agent].hostname = \"${host.name}\"  \
+    \ & [agent].omit_hostname = false  \
+    \ & [[outputs.http]].url = \\\"http://${:let result = \"\";for x in hosts {if(include(x.deployModuleNames, \"tdengine_firstEp\")){result = result + x.ip;}}result}:6041/influxdb/v1/write?db=cluster_metrics\\\"  \
+    \ & [[outputs.http]].data_format = \\\"influx\\\"  \
+    \ & [[outputs.http]].influx_max_line_bytes = 1024 \
+    \ & [[outputs.http]].method = \\\"POST\\\"  \
+    \ & [[outputs.http]].timeout = \\\"5s\\\"  \
+    \ & [[outputs.http]].username = \\\"root\\\"  \
+    \ & [[outputs.http]].password = \\\"taosdata\\\"  \
+    \ & [[inputs.cpu]].percpu = true  \
+    \ & [[inputs.cpu]].totalcpu = true  \
+    \ & [[inputs.cpu]].collect_cpu_time = false  \
+    \ & [[inputs.cpu]].report_active = false  \
+    \ & [[inputs.disk]].interval = \\\"20s\\\"  \
+    \ & [[inputs.net]].ignore_protocol_stats = true \""
+  - "x_set_telegraf -p /etc/telegraf/telegraf.conf -l \"${base_home} ${data_home}\""
+  enabled: true
+- name: "运行 telegraf"
+  description: "运行 telegraf"
+  commands:
+  - "touch /etc/telegraf/start.sh"
+  - "echo \"nohup telegraf --config /etc/telegraf/telegraf.conf > /etc/telegraf/telegraf.log\
+    \ 2>&1 &\" > /etc/telegraf/start.sh"
+  - "chmod 755 /etc/telegraf/start.sh"
+  - "/etc/telegraf/start.sh"
+  enabled: true
+modules:
+- "telegraf"
+catalog: "07_telegraf系统监控"
+name: "11_0_telegraf安装"

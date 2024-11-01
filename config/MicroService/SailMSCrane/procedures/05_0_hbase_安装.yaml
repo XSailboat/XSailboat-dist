@@ -1,0 +1,65 @@
+description: "在指定的服务器上，安装hbase"
+operations:
+- name: "上传hbase"
+  description: "上传hbase"
+  commands:
+  - "xc_upload -d ${base_home} ${modules.hbase_master.pkg}"
+  enabled: false
+- name: "解压hbase安装包"
+  description: "解压hbase安装包"
+  commands:
+  - "x_untar -s ${base_home}/${modules.hbase_master.pkg} -t ${base_home}/hbase -e bin"
+  - "chmod -R 755 ${base_home}/hbase"
+  enabled: true
+- name: "添加hbase环境变量"
+  description: "将hbase添加到环境变量"
+  commands:
+  - "x_add_envs HBASE_HOME=${base_home}/hbase PATH=$PATH:$HBASE_HOME/bin"
+  enabled: true
+- name: "目录规划"
+  description: "目录规划"
+  commands:
+  - "mkdir -p ${data_home}/hbase/tmp"
+  enabled: true
+- name: "配置hbase-env.sh"
+  description: "配置hbase-env.sh"
+  commands:
+  - "x_edit -t kv -p ${base_home}/hbase/conf/hbase-env.sh -d \"export JAVA_HOME=${java_home}\
+    \ & export HBASE_MANAGES_ZK=false & export HADOOP_CONF_DIR=${base_home}/hadoop/etc/hadoop\
+    \ & export HBASE_CLASSPTH=$HBASE_CLASSPATH:${base_home}/hadoop/etc/hadoop & export\
+    \ HBASE_PID_DIR=${base_home}/hbase/tmp & export HBASE_CLASSPATH=$HBASE_CLASSPATH:${base_home}/hadoop/share/hadoop/yarn/timelineservice/hadoop-yarn-server-timelineservice-3.2.2.jar:${base_home}/hadoop/share/hadoop/yarn/timelineservice/hadoop-yarn-server-timelineservice-hbase-client-3.2.2.jar:${base_home}/hadoop/share/hadoop/yarn/timelineservice/hadoop-yarn-server-timelineservice-hbase-common-3.2.2.jar\""
+  enabled: true
+- name: "配置hbase-site.xml"
+  description: "配置hbase-site.xml"
+  commands:
+  - "x_edit -t xml-p -p ${base_home}/hbase/conf/hbase-site.xml -d \"hbase.cluster.distributed=true\
+    \ & hbase.cluster.distributed.description=启用分布式 & hbase.tmp.dir=${data_home}/hbase/tmp\
+    \ & hbase.tmp.dir.description=临时目录的路径 & hbase.rootdir=hdfs://${hadoop_cluster_id}/user/hbase\
+    \ & hbase.rootdir.description=指定在hdfs的路径，hdfs命名服务地址需要和hadoop中core-site.xml中保持一\
+    致 & hbase.zookeeper.property.clientPort=2181 & hbase.zookeeper.property.clientPort.description=依\
+    赖外部Zookeeper集群的连接配置 & hbase.zookeeper.quorum=${:let result = \"\" ;for x in hosts{if(include(x.deployModuleNames, \"zookeeper\")){result = result + x.name + \",\";}}result=string.substring(result,0,string.length(result)-1);result}\
+    \ & hbase.zookeeper.quorum.description=zookeeper集群地址 & hbase.zookeeper.useMulti=true\
+    \ & hbase.zookeeper.useMulti.description=Zookeeper版本为3.4以后有效，用于在某些情形下加快Zookeeper操\
+    作并防止某些冲突 & hbase.unsafe.stream.capability.enforce=false & hbase.unsafe.stream.capability.enforce.description=完\
+    全分布式必须为false & hbase.wal.provider=filesystem & hbase.wal.provider.description=用\
+    于指定WAL（Write Ahead Log，预写日志）的提供者,HBase 1.x版本默认filesystem，HBase 2.x版本默认asyncfs\
+    \ & hbase.hregion.majorcompaction=86400000 & hbase.hregion.majorcompaction.description=一\
+    个region中，HStoreFile的整合时间间隔，默认7天\""
+  enabled: true
+- name: "配置 backup-masters"
+  description: "配置 backup-masters"
+  commands:
+  - "echo -e \"${:let result = \"\";for x in hosts {if(include(x.deployModuleNames,\
+    \ \"hbase_master\")){result = result + x.name + \"\n\";}}result}\" > ${base_home}/hbase/conf/backup-masters"
+  enabled: true
+- name: "配置 regionservers"
+  description: "配置 regionservers"
+  commands:
+  - "echo -e \"${:let result = \"\";for x in hosts {if(include(x.deployModuleNames,\
+    \ \"hbase_resionserver\")){result = result + x.name + \"\n\";}}result}\" > ${base_home}/hbase/conf/regionservers"
+  enabled: true
+modules:
+- "hbase_master"
+- "hbase_resionserver"
+catalog: "03_hadoop生态圈"
+name: "05_0_hbase_安装"

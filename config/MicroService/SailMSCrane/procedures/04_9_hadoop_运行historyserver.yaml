@@ -1,0 +1,11 @@
+description: "在指定的服务器上，运行historyserver"
+modules:
+ - yarn_historyserver
+operations:
+- name: "运行historyserver"
+  description: "运行historyserver"
+  commands:
+  - "${base_home}/hadoop/bin/mapred --daemon start historyserver"
+  - "x_connect \"19888 10020\""
+  enabled: true
+catalog: "03_hadoop生态圈"

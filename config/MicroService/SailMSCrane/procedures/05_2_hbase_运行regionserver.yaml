@@ -1,0 +1,12 @@
+description: "在指定的服务器上，运行regionserver"
+operations:
+- name: "运行 regionserver"
+  description: "运行 regionserver"
+  commands:
+  - "${base_home}/hbase/bin/hbase-daemon.sh start regionserver"
+  - "x_connect \"16020 16030\""
+  enabled: true
+modules:
+- "hbase_resionserver"
+catalog: "03_hadoop生态圈"
+name: "05_2_hbase_运行regionserver"

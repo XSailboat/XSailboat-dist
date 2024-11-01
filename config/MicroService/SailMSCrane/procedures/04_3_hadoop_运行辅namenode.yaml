@@ -1,0 +1,21 @@
+description: "在指定的服务器上，拉取FSImage，运行辅namenode"
+operations:
+- name: "拉取FSImage"
+  description: "在辅namenode节点上，拉取FSImage，该操作只能执行一次，重复执行会导致版本冲突，.FSImage_init用于标记是否执\
+    行过拉取"
+  commands:
+  - "x_flag get ${base_home}/hadoop/.FSImage_init"
+  - "${base_home}/hadoop/bin/hdfs namenode -bootstrapStandby"
+  - "x_contain"
+  - "x_flag set ${base_home}/hadoop/.FSImage_init"
+  enabled: true
+- name: "运行辅namenode"
+  description: "运行辅namenode"
+  commands:
+  - "${base_home}/hadoop/bin/hdfs --daemon start namenode"
+  - "x_connect \"9000 50070\""
+  enabled: true
+modules:
+- "hdfs_辅namenode"
+catalog: "03_hadoop生态圈"
+name: "04_3_hadoop_运行辅namenode"

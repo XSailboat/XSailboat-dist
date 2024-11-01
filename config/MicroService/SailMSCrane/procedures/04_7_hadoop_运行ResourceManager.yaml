@@ -1,0 +1,11 @@
+description: "在指定的服务器上，运行Resourcemanager"
+modules:
+ - yarn_resourcemanager
+operations:
+- name: "运行RM"
+  description: "运行RM"
+  commands:
+  - "${base_home}/hadoop/bin/yarn --daemon start resourcemanager"
+  - "x_connect \"8088 8033\""
+  enabled: true
+catalog: "03_hadoop生态圈"

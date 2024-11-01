@@ -1,0 +1,12 @@
+description: "在指定的服务器上，运行master"
+operations:
+- name: "运行master"
+  description: "运行master"
+  commands:
+  - "${base_home}/hbase/bin/hbase-daemon.sh start master"
+  - "x_connect \"16000 16010\""
+  enabled: true
+modules:
+- "hbase_master"
+catalog: "03_hadoop生态圈"
+name: "05_1_hbase_运行master"

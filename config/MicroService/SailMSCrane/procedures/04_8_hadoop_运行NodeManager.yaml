@@ -1,0 +1,11 @@
+description: "在指定的服务器上，运行nodemanager"
+modules:
+ - yarn_nodemanager
+operations:
+- name: "运行NM"
+  description: "运行NM"
+  commands:
+  - "${base_home}/hadoop/bin/yarn --daemon start nodemanager"
+  - "x_connect \"8040 8042 13562\""
+  enabled: true
+catalog: "03_hadoop生态圈"

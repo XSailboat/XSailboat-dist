@@ -1,0 +1,4 @@
+base_node: "/flume"
+tree:
+  app_log: "@app_log.properties"
+  flink_log: "@flink_log.properties"

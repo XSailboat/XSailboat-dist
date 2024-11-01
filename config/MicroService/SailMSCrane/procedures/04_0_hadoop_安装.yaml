@@ -1,0 +1,223 @@
+description: "在指定的服务器上，安装hadoop"
+operations:
+- name: "上传hadoop"
+  description: "确保基础设施目录存在，并上传hadoop安装包"
+  commands:
+  - "mkdir -p ${base_home}"
+  - "xc_upload -d ${base_home} ${modules.hdfs_journalnode.pkg}"
+  enabled: false
+- name: "解压hadoop安装包"
+  description: "解压hadoop安装包"
+  commands:
+  - "x_untar -s ${base_home}/${modules.hdfs_journalnode.pkg} -t ${base_home}/hadoop\
+    \ -e bin"
+  - "chmod -R 755 ${base_home}/hadoop"
+  enabled: true
+- name: "添加hadoop环境变量"
+  description: "将hadoop添加到环境变量"
+  commands:
+  - "x_add_envs \"HADOOP_HOME=${base_home}/hadoop PATH=$PATH:$HADOOP_HOME/bin\""
+  enabled: true
+- name: "目录规划"
+  description: "目录规划"
+  commands:
+  - "mkdir -p ${data_home}/hadoop/dfs/name"
+  - "mkdir -p ${data_home}/hadoop/dfs/data"
+  - "mkdir -p ${data_home}/hadoop/tmp"
+  - "mkdir -p ${data_home}/hadoop/journaldata"
+  enabled: true
+- name: "配置hadoop-env.sh"
+  description: "配置hadoop-env.sh"
+  commands:
+  - "x_edit -t kv -p ${base_home}/hadoop/etc/hadoop/hadoop-env.sh -d \"export JAVA_HOME=${java_home}\
+    \ & export HDFS_NAMENODE_USER=\\\"${host.sysUser}\\\" & export HDFS_DATANODE_USER=\\\
+    \"${host.sysUser}\\\" & export HDFS_ZKFC_USER=\\\"${host.sysUser}\\\" & export\
+    \ HDFS_JOURNALNODE=\\\"${host.sysUser}\\\" & export HDFS_DATANODE_OPTS=\\\"-Xmx12G\
+    \ -Xms1G\\\" \""
+  enabled: true
+- name: "配置yarn-env.sh"
+  description: "配置yarn-env.sh"
+  commands:
+  - "x_edit -t kv -p ${base_home}/hadoop/etc/hadoop/yarn-env.sh -d \"export JAVA_HOME=${java_home}\
+    \ & export HDFS_NAMENODE_USER=\\\"${host.sysUser}\\\" & export HDFS_DATANODE_USER=\\\
+    \"${host.sysUser}\\\" & export HDFS_ZKFC_USER=\\\"${host.sysUser}\\\" & export\
+    \ HDFS_JOURNALNODE=\\\"${host.sysUser}\\\" \""
+  enabled: true
+- name: "配置mapred-env.sh"
+  description: "配置mapred-env.sh"
+  commands:
+  - "x_edit -t kv -p ${base_home}/hadoop/etc/hadoop/mapred-env.sh -d \"export JAVA_HOME=${java_home}\""
+  enabled: true
+- name: "配置core-site.xml"
+  description: "配置core-site.xml"
+  commands:
+  - "x_edit -t xml-p -p ${base_home}/hadoop/etc/hadoop/core-site.xml -d \"fs.defaultFS=hdfs://${hadoop_cluster_id}\
+    \ & fs.defaultFS.description=指定hdfs的nameservices\
+    \ & hadoop.tmp.dir=${data_home}/hadoop/tmp\
+    \ & hadoop.tmp.dir.description=指定hadoop临时目录 & ha.zookeeper.quorum=${:let result = \"\" ;for x in hosts {if(include(x.deployModuleNames, \"zookeeper\")){result = result + x.name + \":2181,\" ;}}result=string.substring(result,0,string.length(result)-1);result}\
+    \ & ha.zookeeper.quorum.description=指定zookeeper地址 & ha.zookeeper.session-timeout.ms=1000\
+    \ & ha.zookeeper.session-timeout.ms.description=连接zookeeper超时时间 & hadoop.http.staticuser.user=${host.sysUser}\
+    \ & hadoop.http.staticuser.user.description=未验证! 用户角色配置，不配置此项会导致web页面报错 & hadoop.http.filter.initializers=org.apache.hadoop.security.HttpCrossOriginFilterInitializer\
+    \ & hadoop.http.filter.initializers.description=http服务器过滤链 & fs.trash.interval=1440\
+    \ & fs.trash.interval.description=被删文件在回收站的存放时间 & fs.trash.checkpoint.interval=1440\
+    \ & fs.trash.checkpoint.interval.description=回收站的检查周期 & hadoop.proxyuser.hadoop.hosts=*\
+    \ & hadoop.proxyuser.hadoop.hosts.description=可以使用Hadoop代理用户功能的主机列表 & hadoop.proxyuser.hadoop.groups=*\
+    \ & hadoop.proxyuser.hadoop.groups.description=指定哪些用户组可以使用Hadoop的代理用户功能 & hadoop.logfile.size=104857600\
+    \ & hadoop.logfile.size.description=每个日志文件的最大值，单位bytes,这里是100M & hadoop.logfile.count=2\
+    \ & hadoop.logfile.count.description=日志文件的最大数量 \""
+  enabled: true
+- name: "配置hdfs-site.xml"
+  description: "配置hdfs-site.xml"
+  commands:
+  - "x_edit -t xml-p -p ${base_home}/hadoop/etc/hadoop/hdfs-site.xml -d \"dfs.nameservices=${hadoop_cluster_id}\
+    \ & dfs.nameservices.description=指定hdfs的nameservice为yc， 需要和core-site.xml中的保持一致\
+    \ & dfs.ha.namenodes.${hadoop_cluster_id}=nn1,nn2 & dfs.ha.namenodes.${hadoop_cluster_id}.description=集\
+    群包含两个NameNode，分别是nn1，nn2 & dfs.namenode.rpc-address.${hadoop_cluster_id}.nn1=${:let\
+    \ result = \"\";for x in hosts {if(include(x.deployModuleNames, \"hdfs_主namenode\"\
+    )){result = result + x.name + \":9000\";}}result} & dfs.namenode.rpc-address.${hadoop_cluster_id}.nn1.description=nn1的\
+    RPC通信地址 & dfs.namenode.http-address.${hadoop_cluster_id}.nn1=${:let result = \"\
+    \";for x in hosts {if(include(x.deployModuleNames, \"hdfs_主namenode\")){result\
+    \ = result + x.name + \":50070\";}}result} & dfs.namenode.http-address.${hadoop_cluster_id}.nn1.description=nn1的\
+    http通信地址 & dfs.namenode.rpc-address.${hadoop_cluster_id}.nn2=${:let result = \"\
+    \";for x in hosts {if(include(x.deployModuleNames, \"hdfs_辅namenode\")){result\
+    \ = result + x.name + \":9000\";}}result} & dfs.namenode.rpc-address.${hadoop_cluster_id}.nn2.description=nn2的\
+    RPC通信地址 & dfs.namenode.http-address.${hadoop_cluster_id}.nn2=${:let result = \"\
+    \";for x in hosts {if(include(x.deployModuleNames, \"hdfs_辅namenode\")){result\
+    \ = result + x.name + \":50070\";}}result} & dfs.namenode.http-address.${hadoop_cluster_id}.nn2.description=nn2的\
+    http通信地址 & dfs.namenode.shared.edits.dir=qjournal://${:let result = \"\";for x\
+    \ in hosts {if(include(x.deployModuleNames, \"hdfs_journalnode\")){result = result\
+    \ + x.name + \":8485;\";}}result=string.substring(result,0,string.length(result)-1);result}/yc\
+    \ & dfs.namenode.shared.edits.dir.description=指定NameNode的元数据在 JournalNode上的存放位\
+    置 & dfs.journalnode.edits.dir=${data_home}/hadoop/journaldata & dfs.journalnode.edits.dir.description=指\
+    定JournalNode在本地磁盘存放数据的位置 & dfs.namenode.name.dir=file:${data_home}/hadoop/dfs/name\
+    \ & dfs.namenode.name.dir.description=namenode工作目录-数据存储目录 & dfs.datanode.data.dir=file:${data_home}/hadoop/dfs/data\
+    \ & dfs.datanode.data.dir.description=datanode工作目录-数据存储目录 & dfs.ha.automatic-failover.enabled=true\
+    \ & dfs.ha.automatic-failover.enabled.description=开启NameNode失败自动切换 & dfs.client.failover.proxy.provider.${hadoop_cluster_id}=org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\
+    \ & dfs.client.failover.proxy.provider.${hadoop_cluster_id}.description=配置失败自动\
+    切换实现方式 & dfs.ha.fencing.methods=sshfence\nshell(/bin/true) & dfs.ha.fencing.methods.description=配\
+    置隔离机制，sshfence 通过 ssh 登录到前一个 active NameNode 并将其杀死。为了让该机制成功执行，需配置免密码 ssh 登陆,这可\
+    通过参数 dfs.ha.fencing.ssh.private-key-files 设置一个私钥文件 & dfs.ha.fencing.ssh.connect-timeout=30000\
+    \ & dfs.ha.fencing.ssh.connect-timeout.description=ssh登录超时时间 & dfs.ha.fencing.ssh.private-key-files=/home/${host.sysUser}/.ssh/id_rsa\
+    \ & dfs.ha.fencing.ssh.private-key-files.description=ssh私钥 & ha.failover-controller.cli-check.rpc-timeout.ms=60000\
+    \ & ha.failover-controller.cli-check.rpc-timeout.ms.description= & dfs.replication=2\
+    \ & dfs.replication.description=HDFS Datanode同时处理文件的上限，HBase需要 & dfs.webhdfs.enabled=true\
+    \ & dfs.webhdfs.enabled.description=webhdfs 服务开启 & dfs.permissions.enabled=false\
+    \ & dfs.permissions.enabled.description=是否在HDFS中开启权限检查 \""
+  enabled: true
+- name: "配置workers"
+  description: "配置workers"
+  commands:
+  - "echo -e \"${:let result = \"\";for x in hosts {if(include(x.deployModuleNames,\
+    \ \"hdfs_datanode\")){result = result + x.name + \"\n\";}}result}\" > ${base_home}/hadoop/etc/hadoop/workers"
+  enabled: true
+- name: "配置yarn-site.xml"
+  description: "配置配置yarn-site.xml"
+  commands:
+  - "x_edit -t xml-p -p ${base_home}/hadoop/etc/hadoop/yarn-site.xml -d \"yarn.resourcemanager.ha.enabled=true\
+    \ & yarn.resourcemanager.ha.enabled.description=是否开启高可用，默认false & yarn.resourcemanager.cluster-id=${hadoop_cluster_id}\
+    \ & yarn.resourcemanager.cluster-id.description=指定RM的集群id & yarn.resourcemanager.ha.rm-ids=rm1,rm2\
+    \ & yarn.resourcemanager.ha.rm-ids.description=启动高可能时，指定集群中的RM名称列表 & yarn.resourcemanager.hostname.rm1=${:let\
+    \ result = \"\";for x in hosts {if(include(x.deployModuleNames, \"hdfs_主namenode\"\
+    )){result = result + x.name;}}result} & yarn.resourcemanager.hostname.rm1.description=分\
+    别指定RM服务的主机地址 & yarn.resourcemanager.hostname.rm2=${:let result = \"\";for x in\
+    \ hosts {if(include(x.deployModuleNames, \"hdfs_辅namenode\")){result = result\
+    \ + x.name;}}result}   & yarn.resourcemanager.hostname.rm2.description=分别指定RM服\
+    务的主机地址   & yarn.resourcemanager.webapp.address.rm1=${:let result = \"\";for x\
+    \ in hosts {if(include(x.deployModuleNames, \"hdfs_主namenode\")){result = result\
+    \ + x.name + \":8088\";}}result}   & yarn.resourcemanager.webapp.address.rm1.description=RM\
+    \ Web应用的http地址，需指定端口，否则随机   & yarn.resourcemanager.webapp.address.rm2=${:let result\
+    \ = \"\";for x in hosts {if(include(x.deployModuleNames, \"hdfs_辅namenode\")){result\
+    \ = result + x.name + \":8088\";}}result}   & yarn.resourcemanager.webapp.address.rm2.description=RM\
+    \ Web应用的http地址，需指定端口，否则随机   & yarn.resourcemanager.zk-address=${:let result =\
+    \ \" \" ;for x in hosts {if(include(x.deployModuleNames, \"zookeeper\")){result = result + x.name + \":2181,\";}}result=string.substring(result,0,string.length(result)-1);result}\
+    \ & yarn.resourcemanager.zk-address.description=指定要连接zookeeper集群地址   & yarn.nodemanager.aux-services=mapreduce_shuffle\
+    \ & yarn.nodemanager.aux-services.description=指定nodemanager启动时，加载server的方式   &\
+    \ yarn.log-aggregation-enable=true & yarn.log-aggregation-enable.description=是\
+    否开启日志聚合   & yarn.nodemanager.remote-app-log-dir=hdfs://${hadoop_cluster_id}/user/yarn/logs\
+    \ & yarn.nodemanager.remote-app-log-dir.description=聚合日志在hdfs上的存放位置   & yarn.log-aggregation.retain-seconds=86400\
+    \ & yarn.log-aggregation.retain-seconds.description=聚合日志在hdfs上的保存时间   & yarn.log.server.url=http://${:let\
+    \ result = \"\";for x in hosts {if(include(x.deployModuleNames, \"hdfs_主namenode\"\
+    )){result = result + x.name;}}result}:19888/jobhistory/logs   & yarn.log.server.url.description=log\
+    \ server地址   & yarn.resourcemanager.recovery.enabled=true   & yarn.resourcemanager.recovery.enabled.description=启\
+    用自动恢复 & yarn.resourcemanager.store.class=org.apache.hadoop.yarn.server.resourcemanager.recovery.ZKRMStateStore\
+    \ & yarn.resourcemanager.store.class.description=制定resourcemanager的状态信息存储在zookeeper集\
+    群上 & yarn.webapp.ui2.enable=true   & yarn.webapp.ui2.enable.description=启用yarn\
+    \ ui2   & yarn.timeline-service.http-cross-origin.enabled=true   & yarn.timeline-service.http-cross-origin.enabled.description=当\
+    该配置项设置为true时，YARN时间线服务将允许来自不同源的HTTP请求访问其提供的接口和数据 & yarn.resourcemanager.webapp.cross-origin.enabled=true\
+    \ & yarn.resourcemanager.webapp.cross-origin.enabled.description=当该配置项设置为true时\
+    ，ResourceManager的Web应用将允许来自不同源的HTTP请求访问其提供的REST API等资源   & yarn.nodemanager.webapp.cross-origin.enabled=true\
+    \ & yarn.nodemanager.webapp.cross-origin.enabled.description=当该配置项设置为 true 时，\
+    NodeManager 的 Web 应用将允许跨域请求，即允许来自不同源（域名、协议或端口）的客户端访问其提供的资源和接口 & yarn.nodemanager.resource.memory-mb=24576\
+    \ & yarn.nodemanager.resource.memory-mb.description=NM配置，每个节点可用的最大内存，RM单容器内存不可\
+    超过此值，默认8G   & yarn.nodemanager.vmen-pmem-ratio=2.1   & yarn.nodemanager.vmen-pmem-ratio.description=NM配\
+    置，虚拟内存率，占task所用内存的百分比，默认2.1   & yarn.scheduler.minimum-allocation-mb=256   & yarn.scheduler.minimum-allocation-mb.description=RM配\
+    置，单容器可申请的最小内存   & yarn.scheduler.maximum-allocation-mb=4096   & yarn.scheduler.maximum-allocation-mb.description=RM配\
+    置，单容器可申请的最大内存 & yarn.application.classpath=${base_home}/hadoop/etc/hadoop:${base_home}/hadoop/share/hadoop/common/lib/*:${base_home}/hadoop/share/hadoop/common/*:${base_home}/hadoop/share/hadoop/hdfs:${base_home}/hadoop/share/hadoop/hdfs/lib/*:${base_home}/hadoop/share/hadoop/hdfs/*:${base_home}/hadoop/share/hadoop/mapreduce/lib/*:${base_home}/hadoop/share/hadoop/mapreduce/*:${base_home}/hadoop/share/hadoop/yarn:${base_home}/hadoop/share/hadoop/yarn/lib/*:${base_home}/hadoop/share/hadoop/yarn/*\
+    \ & yarn.application.classpath.description=yarn应用程序路径，可执行“hadoop classpath”命令查\
+    看   & yarn.timeline-service.enabled=false   & yarn.timeline-service.enabled.description=是\
+    否启用timeLine Service   & yarn.timeline-service.version=2.0f   & yarn.timeline-service.version.description=timeLineService版\
+    本，默认1.0   & yarn.timeline-service.writer.class=org.apache.hadoop.yarn.server.timelineservice.storage.HBaseTimelineWriterImpl\
+    \ & yarn.timeline-service.writer.class.description=后端存储编写器的类。默认为HBase存储写入器 & yarn.timeline-service.reader.class=org.apache.hadoop.yarn.server.timelineservice.storage.HBaseTimelineReaderImpl\
+    \ & yarn.timeline-service.reader.class.description=后端存储阅读器的类。默认为HBase存储读取器 & yarn.system-metrics-publisher.enabled=true\
+    \ & yarn.system-metrics-publisher.enabled.description=是否由RM和NM在timeLine service上\
+    发布 yarn system metrics   & yarn.timeline-service.hbase-schema.prefix=yarn:prod.\
+    \   & yarn.timeline-service.hbase-schema.prefix.description=hbase表的模式前缀。默认为prod\
+    \   & yarn.timeline-service.hbase.coprocessor.jar.hdfs.location=hdfs://${hadoop_cluster_id}/user/hbase/coprocessor/hadoop-yarn-server-timelineservice.jar\
+    \ & yarn.timeline-service.hbase.coprocessor.jar.hdfs.location.description=coprocessor依\
+    赖jar的位置   & yarn.timeline-service.hostname=${:let result = \"\";for x in hosts\
+    \ {if(include(x.deployModuleNames, \"yarn_timelineserver\")){result = result +\
+    \ x.name;}}result}   & yarn.timeline-service.hostname.description=timeLineService\
+    \ web应用所在主机名   & yarn.timeline-service.reader.webapp.address=${:let result = \"\
+    \";for x in hosts {if(include(x.deployModuleNames, \"yarn_timelineserver\")){result\
+    \ =result + x.name + \":8188\";}}result}   & yarn.timeline-service.reader.webapp.address.description=时\
+    间轴阅读器Web应用程序的http地址   & yarn.timeline-service.reader.webapp.https.address=${:let\
+    \ result = \"\";for x in hosts {if(include(x.deployModuleNames, \"yarn_timelineserver\"\
+    )){result = result + x.name + \":8190\";}}result}   & yarn.timeline-service.reader.webapp.https.address.description=时\
+    间轴阅读器Web应用程序的https地址   & yarn.timeline-service.reader.bind-host=0.0.0.0 & yarn.timeline-service.reader.bind-host.description=指\
+    定 YARN Timeline Service Reader 组件绑定的主机地址 & yarn.timeline-service.hbase.configuration.file=file:${base_home}/hbase/conf/hbase-site.xml\
+    \ & yarn.timeline-service.hbase.configuration.file.description=hbase-site.xml配\
+    置文件的可选URL，用于连接到时间轴服务hbase集群   & yarn.timeline-service.writer.flush-interval-seconds=60\
+    \ & yarn.timeline-service.writer.flush-interval-seconds.description=时间轴控制器刷新编辑\
+    器的频率 & yarn.timeline-service.app-collector.linger-period.ms=60 & yarn.timeline-service.app-collector.linger-period.ms.description=am容\
+    器结束后，nm应用收集器的存活时间 & yarn.timeline-service.timeline-client.number-of-async-entities-to-merge=10\
+    \ & yarn.timeline-service.timeline-client.number-of-async-entities-to-merge.description=时\
+    间轴V2客户端尝试合并异步实体的数量 & yarn.timeline-service.hbase.coprocessor.app-final-value-retention-milliseconds=259200000\
+    \ & yarn.timeline-service.hbase.coprocessor.app-final-value-retention-milliseconds.description=该\
+    设置用于控制已完成应用的指标的最终值在合并到流总和中之前保留多长时间 & yarn.rm.system-metrics-publisher.emit-container-events=false\
+    \ & yarn.rm.system-metrics-publisher.emit-container-events.description=RM是否将 yarn\
+    \ container metrics 发布到时间轴服务器   & yarn.nodemanager.emit-container-events=true\
+    \   & yarn.nodemanager.emit-container-events.description=NM是否将 yarn container\
+    \ metrics发布到时间轴服务器   & yarn.timeline-service.http-cross-origin.enabled=true  \
+    \ & yarn.timeline-service.http-cross-origin.enabled.description=是否启用CORS支持   &\
+    \ yarn.nodemanager.delete.debug-delay-sec=600   & yarn.nodemanager.delete.debug-delay-sec.description=应\
+    用程序执行后，NodeManager的DeletionService删除应用程序的本文化文件和日志的延迟时间（s）   & yarn.node-labels.enabled=true\
+    \ & yarn.node-labels.enabled.description=是否启用启用节点标签功能   & yarn.node-labels.fs-store.root-dir=hdfs://${hadoop_cluster_id}/user/hadoop/yarn/node-labels\
+    \ & yarn.node-labels.fs-store.root-dir.description=指定了 YARN 节点标签（Node Labels）信\
+    息的存储位置   & yarn.resourcemanager.scheduler.class=org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler\
+    \ & yarn.resourcemanager.scheduler.class.description=指定 YARN 资源管理器（ResourceManager）\
+    所使用的调度器类   & yarn.nodemanager.log-dirs=${base_home}/hadoop/userlogs & yarn.nodemanager.log-dirs.description=nodemanager\
+    \ 上 container 日志存放地址   & yarn.nodemanager.log.retain-seconds=10800 & yarn.nodemanager.log.retain-seconds.description=nodemanager\
+    \ 本地日志保留时间，只有不启用聚合的时候才生效 \""
+  enabled: true
+- name: "配置mapred-site.xml"
+  description: "mapred-site.xml"
+  commands:
+  - "x_edit -t xml-p -p ${base_home}/hadoop/etc/hadoop/mapred-site.xml -d \" mapreduce.framework.name=yarn\
+    \ & mapreduce.framework.name.description=指定mr框架为yarn方式 & mapreduce.jobhistory.address=${:let\
+    \ result = \"\";for x in hosts {if(include(x.deployModuleNames, \"yarn_historyserver\"\
+    )){result = result + x.name + \":10020\";}}result} & mapreduce.jobhistory.address.description=指\
+    定mapreduce jobhistory地址 & mapreduce.jobhistory.webapp.address=${:let result =\
+    \ \"\";for x in hosts {if(include(x.deployModuleNames, \"yarn_historyserver\"\
+    )){result = result + x.name + \":19888\";}}result} & mapreduce.jobhistory.webapp.address.description=任\
+    务历史服务器的web地址 & mapreduce.map.memory.mb=256 & mapreduce.map.memory.mb.description=AM配\
+    置，map任务的默认内存大小，取值应在RM配置之间 & mapreduce.reduce.memory.mb=512 & mapreduce.reduce.memory.mb.description=AM配\
+    置，reduce任务的默认内存大小，取值应在RM配置之间，一般是map的2倍 & mapreduce.map.java.opts=-Xmx256m & mapreduce.map.java.opts.description=AM\
+    \ JVM配置，map任务运行JVM的最大内存，取值应在AM配置之间 & mapreduce.reduce.java.opts=-Xmx512m & mapreduce.reduce.java.opts.description=AM\
+    \ JVM配置，reduce任务运行JVM的最大内存，取值应在AM配置之间 & mapreduce.job.emit-timeline-data=true\
+    \ & mapreduce.job.emit-timeline-data.description=指定Application Master是否应将时间轴数据\
+    发送到时间轴服务器。单个作业可以覆盖此值 \""
+  enabled: true
+modules:
+- "ALL"
+catalog: "03_hadoop生态圈"
+name: "04_0_hadoop_安装"

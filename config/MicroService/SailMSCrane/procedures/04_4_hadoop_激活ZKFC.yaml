@@ -1,0 +1,14 @@
+description: "在指定的服务器上，激活ZKFC"
+operations:
+- name: "激活ZKFC"
+  description: "在主namenode节点上，激活ZKFC，该操作只执行一次,重复执行会导致版本冲突，.zkfc_init用于标记是否执行过初始化"
+  commands:
+  - "x_flag get ${base_home}/hadoop/.zkfc_init"
+  - "${base_home}/hadoop/bin/hdfs zkfc -formatZK"
+  - "x_contain"
+  - "x_flag set ${base_home}/hadoop/.zkfc_init"
+  enabled: true
+modules:
+- "hdfs_主namenode"
+catalog: "03_hadoop生态圈"
+name: "04_4_hadoop_激活ZKFC"

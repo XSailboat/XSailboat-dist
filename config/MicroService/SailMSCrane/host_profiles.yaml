@@ -1,0 +1,92 @@
+XCloud170:
+  adminPswd: cims#0
+  adminUser: root
+  deployModuleNames:
+    - jdk
+    - zookeeper
+    - hdfs_journalnode
+    - hdfs_主namenode
+    - hdfs_zkfc
+    - yarn_resourcemanager
+    - hbase_master
+    - tdengine_firstEp
+    - telegraf
+    - flume
+    - kafka
+    - hive
+  ip: 192.168.0.170
+  sysPswd: cims#0
+  sysUser: hadoop
+  seq: 170
+XCloud171:
+  adminPswd: cims#0
+  adminUser: root
+  deployModuleNames:
+    - jdk
+    - zookeeper
+    - hdfs_journalnode
+    - hdfs_辅namenode
+    - hdfs_zkfc
+    - yarn_resourcemanager
+    - hbase_master
+    - tdengine_secondEp
+    - telegraf
+    - kafka
+    - flume
+  ip: 192.168.0.171
+  sysPswd: cims#0
+  sysUser: hadoop
+  seq: 171
+XCloud172:
+  adminPswd: cims#0
+  adminUser: root
+  deployModuleNames:
+    - jdk
+    - zookeeper
+    - hdfs_journalnode
+    - hdfs_datanode
+    - yarn_nodemanager
+    - hbase_resionserver
+    - tdengine_other
+    - telegraf
+    - flink
+    - kafka
+    - postgresql
+  ip: 192.168.0.172
+  sysPswd: cims#0
+  sysUser: hadoop
+  seq: 172
+XCloud174:
+  adminPswd: cims#0
+  adminUser: root
+  deployModuleNames:
+    - jdk
+    - zookeeper
+    - hdfs_datanode
+    - yarn_nodemanager
+    - yarn_historyserver
+    - hbase_resionserver
+    - tdengine_other
+    - telegraf
+    - kafka
+  ip: 192.168.0.174
+  sysPswd: cims#0
+  sysUser: hadoop
+  seq: 174
+XCloud175:
+  adminPswd: cims#0
+  adminUser: root
+  deployModuleNames:
+    - jdk
+    - zookeeper
+    - hdfs_datanode
+    - yarn_nodemanager
+    - yarn_timelineserver
+    - hbase_resionserver
+    - tdengine_other
+    - telegraf
+    - kafka
+  ip: 192.168.0.175
+  sysPswd: cims#0
+  sysUser: hadoop
+  seq: 175
