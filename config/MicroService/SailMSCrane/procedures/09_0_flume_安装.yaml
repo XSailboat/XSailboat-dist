@@ -39,4 +39,4 @@ operations:
 modules:
 - "flume"
 catalog: "06_flume日志采集"
-name: "10_0_flume_安装"
+name: "09_0_flume_安装"

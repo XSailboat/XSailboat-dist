@@ -1,0 +1,13 @@
+description: "将 hive 元数据存储在pg库，安装前先建库"
+operations:
+- name: "创建 hive 元数据库"
+  description: "创建 hive 元数据库"
+  commands:
+  - "x_sql -t pgsql -u ${host.sysUser}"
+  - "CREATE USER hive_schema WITH PASSWORD '${host.sysPswd}' SUPERUSER;"
+  - "CREATE DATABASE hive_schema OWNER hive_schema ENCODING 'UTF8';"
+  enabled: true
+modules:
+- "postgreSql"
+catalog: "09_hive"
+name: "12_0_hive安装准备"

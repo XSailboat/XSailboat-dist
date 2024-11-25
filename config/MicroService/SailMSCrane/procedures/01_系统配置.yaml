@@ -26,20 +26,15 @@ operations:
   - "x_set_limit \"* soft nofile ${soft_nofile} * hard nofile ${hard_nofile} * soft\
     \ noproc ${soft_noproc} * hard noproc ${hard_noproc}\""
   enabled: true
-- name: "关闭SELinux"
-  description: "关闭SELinux"
-  commands:
-  - "x_close selinux"
-  enabled: true
 - name: "SSH无密码登录"
   description: "SSH无密码登录"
   commands:
   - "x_add_ssh ${:let result = \"\" ;for x in hosts { result = result + x.sysUser + \"@\" + x.name + \"@\" + x.sysPswd + \" \";}result}"
   enabled: true
 - name: "重启系统"
-  description: "切换root用户，重启系统"
+  description: "切换管理员用户，重启系统"
   commands:
-  - "x_su -u root -p ${host.adminPswd}"
+  - "x_su -u ${host.adminUser} -p ${host.adminPswd}"
   - "reboot"
   enabled: true
 modules:

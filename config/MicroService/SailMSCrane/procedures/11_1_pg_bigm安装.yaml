@@ -37,6 +37,6 @@ operations:
     \ restart"
   enabled: true
 modules:
-- "postgresql"
+- "postgreSql"
 catalog: "08_PostgreSql数据库"
-name: "12_1_pg_bigm安装"
+name: "11_1_pg_bigm安装"

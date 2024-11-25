@@ -29,4 +29,4 @@ operations:
 modules:
 - "kafka"
 catalog: "04_kafka"
-name: "08_0_kafka_安装"
+name: "07_0_kafka_安装"

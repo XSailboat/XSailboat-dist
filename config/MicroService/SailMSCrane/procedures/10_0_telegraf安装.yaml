@@ -64,4 +64,4 @@ operations:
 modules:
 - "telegraf"
 catalog: "07_telegraf系统监控"
-name: "11_0_telegraf安装"
+name: "10_0_telegraf安装"

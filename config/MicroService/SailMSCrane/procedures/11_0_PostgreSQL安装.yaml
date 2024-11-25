@@ -64,6 +64,6 @@ operations:
   - "cd ${base_home}/pgsql/bin && ./createdb --port=5432 ${host.sysUser}"
   enabled: true
 modules:
-- "postgresql"
+- "postgreSql"
 catalog: "08_PostgreSql数据库"
-name: "12_0_PostgreSQL安装"
+name: "11_0_PostgreSQL安装"

@@ -9,12 +9,12 @@ operations:
   description: "解压  hive 安装包"
   commands:
   - "x_untar -s ${base_home}/${modules.hive.pkg} -t ${base_home}/hive -e bin"
-  enabled: true
+  enabled: false
 - name: "添加 hive 环境变量"
   description: "将 hive 添加到环境变量"
   commands:
   - "x_add_envs HIVE_HOME=${base_home}/hive PATH=$PATH:$HIVE_HOME/bin HIVE_CONF_DIR=${base_home}/hive/conf"
-  enabled: true
+  enabled: false
 - name: "目录规划"
   description: "在 hdfs 上创建所需目录"
   commands:
@@ -23,39 +23,32 @@ operations:
   - "hadoop fs -mkdir -p /tmp/hive"
   - "hadoop fs -chmod 777 /tmp/hive"
   - "mkdir -p ${data_home}/hive/tmp"
-  enabled: true
+  enabled: false
 - name: "配置hive-site.xml"
   description: "配置hive-site.xml"
   commands:
   - "cp ${base_home}/hive/conf/hive-default.xml.template ${base_home}/hive/conf/hive-site.xml"
   - "x_edit -t xml-p -p ${base_home}/hive/conf/hive-site.xml -d \"hive.metastore.warehouse.dir=/usr/hive/warehouse\
-    \ & hive.metastore.warehouse.dir.description=hive元数据在hdfs上的存储目录\
-    \ & hive.exec.scratchdir=/tmp/hive\
+    \ & hive.metastore.warehouse.dir.description=hive元数据在hdfs上的存储目录  & hive.exec.scratchdir=/tmp/hive\
     \ & hive.exec.scratchdir.description=用来存储查询的不同map / reduce阶段的计划，以及存储这些阶段的中间输出\
-    \ & hive.exec.local.scratchdir=${data_home}/hive/tmp/root\
-    \ & hive.exec.local.scratchdir.description=本地临时目录\
-    \ & hive.downloaded.resources.dir=${data_home}/hive/tmp/${hive.session.id}_resources\
-    \ & hive.downloaded.resources.dir.description=从hdfs下载的资源，在本地的临时目录\
-    \ & hive.querylog.location=${data_home}/hive/tmp/root\
+    \ & hive.exec.local.scratchdir=${data_home}/hive/tmp/root   & hive.exec.local.scratchdir.description=本\
+    地临时目录   & hive.downloaded.resources.dir=${data_home}/hive/tmp/${hive.session.id}_resources\
+    \ & hive.downloaded.resources.dir.description=从hdfs下载的资源，在本地的临时目录   & hive.querylog.location=${data_home}/hive/tmp/root\
     \ & hive.querylog.location.description=指定了Hive查询日志的存储位置。当Hive执行查询时，会产生相应的查询日志\
     \ & hive.server2.logging.operation.log.location=${data_home}/hive/tmp/root/operation_logs\
-    \ & hive.server2.logging.operation.log.location.description=指定了HiveServer2操作日志的存储位置\
-    \ & javax.jdo.option.ConnectionURL=jdbc:mysql://192.168.0.102:3306/hive_schema?createDatabaseIfNotExist=true&amp;serverTimezone=GMT\
-    \ & javax.jdo.option.ConnectionURL.description=存放hive元数据的数据库地址\
-    \ & javax.jdo.option.ConnectionDriverName=com.mysql.jdbc.Driver\
-    \ & javax.jdo.option.ConnectionDriverName.description=mysql驱动类\
-    \ & javax.jdo.option.ConnectionUserName=${host.sysUser}\
-    \ & javax.jdo.option.ConnectionUserName.description=mysql数据库用户名\
-    \ & javax.jdo.option.ConnectionPassword=cims#0\
-    \ & javax.jdo.option.ConnectionPassword.description=mysql数据库用户密码\
-    \ & hive.metastore.schema.verification=false\
-    \ & hive.metastore.schema.verification.description=是否验证Hive Metastore的Schema以及是否启用Schema兼容性检查\
-    \ & beeline.hs2.connection.user=${host.sysUser}\
-    \ & beeline.hs2.connection.user.description=hiveserver2用户名\
-    \ & beeline.hs2.connection.password=${host.sysPswd}\
-    \ & beeline.hs2.connection.password.description=hiveserver2用户密码\
-    \ & beeline.hs2.connection.hosts=localhost:10000& beeline.hs2.connection.hosts.description=hiveserver2端口\""
-  enabled: true
+    \ & hive.server2.logging.operation.log.location.description=指定了HiveServer2操作日志\
+    的存储位置  & javax.jdo.option.ConnectionURL=${:let result = \"\";for x in hosts{if(include(x.deployModuleNames,\
+    \ \"postgreSql\")){ result = result + \"jdbc:postgresql://\" + x.ip + \":5432/hive_schema\"\
+    ;}}result}  & javax.jdo.option.ConnectionURL.description=存放hive元数据的数据库地址  & javax.jdo.option.ConnectionDriverName=org.postgresql.Driver\
+    \ & javax.jdo.option.ConnectionDriverName.description=pg库驱动类  & javax.jdo.option.ConnectionUserName=hive_schema\
+    \ & javax.jdo.option.ConnectionUserName.description=pg库用户名  & javax.jdo.option.ConnectionPassword=${host.sysPswd}\
+    \ & javax.jdo.option.ConnectionPassword.description=pg库用户密码  & hive.metastore.schema.verification=false\
+    \ & hive.metastore.schema.verification.description=是否验证Hive Metastore的Schema以及\
+    是否启用Schema兼容性检查  & beeline.hs2.connection.user=${host.sysUser}  & beeline.hs2.connection.user.description=hiveserver2用\
+    户名  & beeline.hs2.connection.password=${host.sysPswd}  & beeline.hs2.connection.password.description=hiveserver2用\
+    户密码    & beeline.hs2.connection.hosts=localhost:10000  & beeline.hs2.connection.hosts.description=hiveserver2端\
+    口\""
+  enabled: false
 - name: "配置hive-env.sh"
   description: "配置hive-env.sh"
   commands:
@@ -63,14 +56,14 @@ operations:
   - "x_edit -t kv -p ${base_home}/hive/conf/hive-env.sh -d \"export HADOOP_HOME=${base_home}/hadoop&\
     \ export HIVE_CONF_DIR=${base_home}/hive/conf& export HIVE_AUX_JARS_PATH=${base_home}/hive/lib&\
     \ export HADOOP_OPTS=\\\"$HADOOP_OPTS -Dfile.encoding=UTF-8\\\"\""
-  enabled: true
+  enabled: false
 - name: "初始化数据库"
   description: "初始化数据库"
   commands:
-  - "cd ${base_home}/hive/bin && schematool -dbType mysql -initSchema"
+  - "cd ${base_home}/hive/bin && schematool -dbType postgres -initSchema"
   enabled: false
-- name: "运行hiveserver2"
-  description: "运行hiveserver2"
+- name: "创建hiveserver2启动脚本"
+  description: "创建hiveserver2启动脚本"
   commands:
   - "touch ${base_home}/hive/bin/start_metastore.sh"
   - "touch ${base_home}/hive/bin/start_hiveserver2.sh"
@@ -78,11 +71,15 @@ operations:
   - "chmod 755 ${base_home}/hive/bin/start_hiveserver2.sh"
   - "echo \"nohup hive --service metastore &\" > ${base_home}/hive/bin/start_metastore.sh"
   - "echo \"nohup hive --service hiveserver2 &\" > ${base_home}/hive/bin/start_hiveserver2.sh"
-  - "${base_home}/hive/bin/start_metastore.sh"
-  - "${base_home}/hive/bin/start_hiveserver2.sh"
-  - "x_connect \"9083 10000\""
   enabled: false
+- name: "运行hiveserver2"
+  description: "运行hiveserver2"
+  commands:
+  - "cd ${base_home}/hive/bin && ./start_metastore.sh &"
+  - "cd ${base_home}/hive/bin && ./start_hiveserver2.sh &"
+  - "x_connect \"9083 10000\""
+  enabled: true
 modules:
 - "hive"
-catalog: "03_hadoop生态圈"
-name: "07_0_Hive安装"
+catalog: "09_hive"
+name: "12_1_Hive安装"

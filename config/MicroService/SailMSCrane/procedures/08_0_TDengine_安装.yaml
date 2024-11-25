@@ -94,4 +94,4 @@ modules:
 - "tdengine_secondEp"
 - "tdengine_other"
 catalog: "05_TDengine"
-name: "09_0_TDengine_安装"
+name: "08_0_TDengine_安装"
