@@ -1,0 +1,239 @@
+<?xml version="1.0"?>
+<!--
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License. See accompanying LICENSE file.
+-->
+<configuration>
+	<!-- 开启RM高可用 -->
+	<property>
+		<name>yarn.resourcemanager.ha.enabled</name>
+		<value>true</value>
+	</property>
+
+	<!-- 指定RM的cluster id -->
+	<property>
+		<name>yarn.resourcemanager.cluster-id</name>
+		<value>yc</value>
+	</property>
+
+	<!-- 指定RM的名字 -->
+	<property>
+		<name>yarn.resourcemanager.ha.rm-ids</name>
+		<value>rm1,rm2</value>
+	</property>
+
+	<!-- 分别指定RM的地址 -->
+	<property>
+		<name>yarn.resourcemanager.hostname.rm1</name>
+		<value>XCloud150</value>
+	</property>
+		
+	<property>
+		<name>yarn.resourcemanager.hostname.rm2</name>
+		<value>XCloud151</value>
+	</property>
+
+	<property>
+		<name>yarn.resourcemanager.webapp.address.rm1</name>
+		<value>XCloud150:8088</value>
+	</property>
+
+	<property>
+		<name>yarn.resourcemanager.webapp.address.rm2</name>
+		<value>XCloud151:8088</value>
+	</property>
+
+	<!-- 指定zk集群地址 -->
+	<property>
+		<name>yarn.resourcemanager.zk-address</name>
+		<value>XCloud150:2181,XCloud151:2181,XCloud152:2181,XCloud153:2181,XCloud154:2181</value>
+	</property>
+	<!-- 指定nodemanager启动时，加载server的方式-->
+	<property>
+		<name>yarn.nodemanager.aux-services</name>
+		<value>mapreduce_shuffle,timeline_collector</value>
+	</property>
+	<!-- 是否开启日志聚合 -->	
+	<property>
+		<name>yarn.log-aggregation-enable</name>
+		<value>true</value>
+	</property>
+
+	<!-- 聚合日志保存时间 -->	
+	<property>
+		<name>yarn.log-aggregation.retain-seconds</name>
+		<value>86400</value>
+	</property>
+
+	<!-- log server地址 -->
+	<property>
+		<name>yarn.log.server.url</name>
+		<value>http://XCloud150:19888/jobhistory/logs</value>
+	</property>
+
+	<!-- 聚合日志在hdfs上的存放位置 -->
+	<property>
+		<name>yarn.nodemanager.remote-app-log-dir</name>
+		<value>hdfs://yc/user/yarn/logs</value>
+	</property>
+
+	<!-- 启用自动恢复 -->
+	<property>
+		<name>yarn.resourcemanager.recovery.enabled</name>
+		<value>true</value>
+	</property>
+
+	<!-- 制定resourcemanager的状态信息存储在zookeeper集群上 -->
+	<property>
+		<name>yarn.resourcemanager.store.class</name>
+		<value>org.apache.hadoop.yarn.server.resourcemanager.recovery.ZKRMStateStore</value>
+	</property>
+	<!-- 启用yarn ui2 -->
+	<property>
+		<name>yarn.webapp.ui2.enable</name>
+		<value>true</value>
+	</property>
+	<property>
+		<name>yarn.timeline-service.http-cross-origin.enabled</name>
+		<value>true</value>
+	</property>
+	<property>
+                <name>yarn.resourcemanager.webapp.cross-origin.enabled</name>
+                <value>true</value>
+	</property>
+	<property>
+                <name>yarn.nodemanager.webapp.cross-origin.enabled</name>
+                <value>true</value>
+	</property>
+
+	<!-- NM配置，每个节点可用的最大内存，RM单容器内存不可超过此值，默认8G -->
+	<property>
+		<name>yarn.nodemanager.resource.memory-mb</name>
+		<value>12288</value>
+	</property>
+
+	<!-- NM配置，虚拟内存率，占task所用内存的百分比，默认2.1 -->
+	<property>
+		<name>yarn.nodemanager.vmen-pmem-ratio</name>
+		<value>2.1</value>
+	</property>
+
+	<!-- RM配置，单容器可申请的最小内存 -->
+	<property>
+		<name>yarn.scheduler.minimum-allocation-mb</name>
+		<value>256</value>
+	</property>
+
+	<!-- RM配置，单容器可申请的最大内存 -->
+	<property>
+		<name>yarn.scheduler.maximum-allocation-mb</name>
+		<value>4096</value>
+	</property>
+
+	<!--yarn应用程序路径，可执行“hadoop classpath”命令查看 -->
+	<property>
+		<name>yarn.application.classpath</name>
+		<value>/xcloud/hadoop/etc/hadoop:/xcloud/hadoop/share/hadoop/common/lib/*:/xcloud/hadoop/share/hadoop/common/*:/xcloud/hadoop/share/hadoop/hdfs:/xcloud/hadoop/share/hadoop/hdfs/lib/*:/xcloud/hadoop/share/hadoop/hdfs/*:/xcloud/hadoop/share/hadoop/mapreduce/lib/*:/xcloud/hadoop/share/hadoop/mapreduce/*:/xcloud/hadoop/share/hadoop/yarn:/xcloud/hadoop/share/hadoop/yarn/lib/*:/xcloud/hadoop/share/hadoop/yarn/*</value>
+	</property>
+
+	<!-- ResourceManager配置使用CapacityScheduler
+	<property>
+		<name> yarn.resourcemanager.scheduler.class</name>
+		<value> org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler</value>
+	</property> -->
+
+	<!-- 是否启用timeLine Service -->
+	<property>
+		<name>yarn.timeline-service.enabled</name>
+		<value>true</value>
+	</property>
+	<!-- timeLine Service版本，默认1.0 -->
+	<property>
+		<name>yarn.timeline-service.version</name>
+		<value>2.0f</value>
+	</property>
+	<!--   -->
+	<property>
+		<name>yarn.nodemanager.aux-services.timeline_collector.class</name>
+		<value>org.apache.hadoop.yarn.server.timelineservice.collector.PerNodeTimelineCollectorsAuxService</value>
+	</property>
+	<!-- 后端存储编写器的类。默认为HBase存储写入器 
+	<property>
+		<name>yarn.timeline-service.writer.class</name>
+		<value>HBase</value>
+	</property>
+	<!- 后端存储阅读器的类。默认为HBase存储读取器。
+	<property>
+		<name>yarn.timeline-service.reader.class</name>
+		<value>HBase</value>
+	</property> -->
+	<!-- 是否由RM和NM在timeLine service上发布 yarn system metrics -->
+	<property>
+		<name>yarn.system-metrics-publisher.enabled</name>
+		<value>true</value>
+	</property>
+	<!-- hbase表的模式前缀。默认为prod -->
+	<property>
+		<name>yarn.timeline-service.schema.prefix</name>
+		<value>prod</value>
+	</property>
+	<!-- coprocessor 依赖jar的位置 -->
+	<property>
+		<name>yarn.timeline-service.hbase.coprocessor.jar.hdfs.location</name>
+		<value>hdfs://yc/user/hbase/coprocessor/hadoop-yarn-server-timelineservice.jar</value>
+	</property>
+	<!-- timeLineService web应用所在主机名 -->
+	<property>
+		<name>yarn.timeline-service.hostname</name>
+		<value>XCloud150</value>
+	</property>
+	<!-- 时间轴阅读器Web应用程序的http地址 -->
+	<property>
+		<name>yarn.timeline-service.reader.webapp.address</name>
+		<value>XCloud150:8188</value>
+	</property>
+	<!-- 时间轴阅读器Web应用程序的https地址 -->
+	<property>
+		<name>yarn.timeline-service.reader.webapp.https.address</name>
+		<value>XCloud150:8190</value>
+	</property>
+	<!-- 时间线阅读器将绑定到的实际地址 -->
+	<property>
+		<name>yarn.timeline-service.reader.bind-host</name>
+		<value>0.0.0.0</value>
+	</property>
+	<!-- hbase-site.xml配置文件的可选URL，用于连接到时间轴服务hbase集群 -->
+	<property>
+		<name>yarn.timeline-service.hbase.configuration.file</name>
+		<value>file:/xcloud/hbase/conf/hbase-site.xml</value>
+	</property>
+	<!-- RM是否将 yarn container metrics 发布到时间轴服务器 -->
+	<property>
+		<name>yarn.rm.system-metrics-publisher.emit-container-events</name>
+		<value>false</value>
+	</property>
+	<!-- NM是否将 yarn container metrics 发布到时间轴服务器 -->
+	<property>
+		<name>yarn.nodemanager.emit-container-events</name>
+		<value>true</value>
+	</property>
+	<!-- 是否启用CORS支持 -->
+	<property>
+		<name>yarn.timeline-service.http-cross-origin.enabled</name>  
+		<value>true</value>
+	</property>
+	<!-- 应用程序执行后，NodeManager的DeletionService删除应用程序的本文化文件和日志的延迟时间（s） -->
+	<property>
+		<name>yarn.nodemanager.delete.debug-delay-sec</name>
+		<value>600</value>
+	</property>
+</configuration>

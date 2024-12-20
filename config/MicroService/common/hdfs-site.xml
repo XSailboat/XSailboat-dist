@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License. See accompanying LICENSE file.
+-->
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+	<!--指定hdfs的nameservice为yc， 需要和core-site.xml中的保持一致 -->
+	<property>
+		<name>dfs.nameservices</name>
+		<value>yc</value>
+	</property>
+
+	<!-- yc包含两个NameNode，分别是nn1，nn2 -->
+	<property>
+		<name>dfs.ha.namenodes.yc</name>
+		<value>nn1,nn2</value>
+	</property>
+
+	<!-- nn1的RPC通信地址 -->
+	<property>
+		<name>dfs.namenode.rpc-address.yc.nn1</name>
+		<value>XCloud150:9000</value>
+	</property>
+
+	<!-- nn1的http通信地址 -->
+	<property>
+		<name>dfs.namenode.http-address.yc.nn1</name>
+		<value>XCloud150:50070</value>
+	</property>
+
+	<!-- nn2的RPC通信地址 -->
+	<property>
+		<name>dfs.namenode.rpc-address.yc.nn2</name>
+		<value>XCloud151:9000</value>
+	</property>
+
+	<!-- nn2的http通信地址 -->
+	<property>
+		<name>dfs.namenode.http-address.yc.nn2</name>
+		<value>XCloud151:50070</value>
+	</property>
+
+	<!-- 指定NameNode的元数据在 JournalNode上的存放位置 -->
+	<property>
+		<name>dfs.namenode.shared.edits.dir</name>
+		<value>qjournal://XCloud150:8485;XCloud151:8485;XCloud152:8485/yc</value>
+	</property>
+
+	<!-- 指定JournalNode在本地磁盘存放数据的位置 -->
+	<property>
+		<name>dfs.journalnode.edits.dir</name>
+		<value>/home/hadoop/data/journaldata</value>
+	</property>
+
+	<!-- namenode工作目录-数据存储目录 -->
+	<property>
+		<name>dfs.namenode.name.dir</name>
+		<value>file:/home/hadoop/data/dfs/name</value>
+	</property>
+
+	<!-- datanode工作目录-数据存储目录 -->
+	<property>
+		<name>dfs.datanode.data.dir</name>
+		<value>file:/home/hadoop/data/dfs/data</value>
+	</property>
+
+	<!-- 开启NameNode失败自动切换 -->
+	<property>
+		<name>dfs.ha.automatic-failover.enabled</name>
+		<value>true</value>
+	</property>
+	
+	<!-- 配置失败自动切换实现方式 -->
+	<property>
+		<name>dfs.client.failover.proxy.provider.yc</name>
+		<value>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider</value>
+	</property>
+
+	<!-- 配置隔离机制 -->
+	<!-- sshfence 通过 ssh 登录到前一个 active NameNode 并将其杀死。为了让该机制成功执行,-->
+	<!-- 需配置免密码 ssh 登陆,这可通过参数 dfs.ha.fencing.ssh.private-key-files 设置一个私钥文件 -->
+	<property>
+		<name>dfs.ha.fencing.methods</name>
+		<value>
+			sshfence
+			shell(/bin/true)
+		</value>
+	</property>
+	
+	<property>
+		<name>dfs.ha.fencing.ssh.connect-timeout</name>
+		<value>30000</value>
+	</property>
+	
+	<property>
+		<name>dfs.ha.fencing.ssh.private-key-files</name>
+		<value>/home/hadoop/.ssh/id_rsa</value>
+	</property>
+	
+	<property>
+		<name>ha.failover-controller.cli-check.rpc-timeout.ms</name>
+		<value>60000</value>
+	</property>
+
+	<!-- HDFS Datanode同时处理文件的上限，HBase需要 -->
+		<property>
+		<name>dfs.replication</name>
+		<value>2</value>
+	</property>
+
+	<!--  webhdfs 服务开启 -->
+	<property>
+		<name>dfs.webhdfs.enabled</name>
+		<value>true</value>
+	</property>
+
+	<!-- 是否在HDFS中开启权限检查 -->
+	<property>
+	       	<name>dfs.permissions.enabled</name>
+		<value>false</value>
+	</property>
+</configuration>

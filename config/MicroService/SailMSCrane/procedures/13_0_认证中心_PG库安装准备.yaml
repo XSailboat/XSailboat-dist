@@ -1,0 +1,19 @@
+description: "认证中心，PG库准备"
+operations:
+- name: "创建数据库"
+  description: "创建数据库"
+  commands:
+  - "x_sql -t pgsql -u ${host.sysUser}"
+  - "CREATE USER ${pg_user} WITH PASSWORD '${pg_passwd}' SUPERUSER;"
+  - "CREATE DATABASE ${pg_db} OWNER ${pg_user} ENCODING 'UTF8';"
+  enabled: true
+- name: "创建模式"
+  description: "创建模式"
+  commands:
+  - "x_sql -t pgsql -u ${pg_user} -p ${pg_passwd} -d ${pg_db}"
+  - "CREATE SCHEMA ${pg_schema} AUTHORIZATION ${pg_user};"
+  enabled: true
+modules:
+- "postgreSql"
+catalog: "10_认证中心"
+name: "13_0_认证中心_PG库安装准备"

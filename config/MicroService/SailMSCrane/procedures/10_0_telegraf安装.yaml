@@ -8,14 +8,14 @@ operations:
 - name: "安装telegraf"
   description: "安装telegraf"
   commands:
-  - "x_su -u root -p ${host.adminPswd}"
+  - "x_su -u ${host.adminUser} -p ${host.adminPswd}"
   - "cd ${base_home} && rpm -ivh ${modules.telegraf.pkg}"
   enabled: true
 - name: "修改所有者"
   description: "修改所有者"
   commands:
-  - "x_su -u root -p ${host.adminPswd}"
-  - "chown -R hadoop:hadoop /etc/telegraf"
+  - "x_su -u ${host.adminUser} -p ${host.adminPswd}"
+  - "chown -R ${host.sysUser}:${host.Pswd} /etc/telegraf"
   enabled: true
 - name: "备份配置"
   description: "备份配置"

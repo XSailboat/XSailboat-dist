@@ -11,6 +11,12 @@ operations:
   commands:
   - "x_untar -s ${java_home}/${modules.jdk.pkg} -t ${java_home} -e bin"
   - "chmod -R 755 ${java_home}"
+  enabled: false
+- name: "删除系统自带jdk"
+  description: "centos8 会优先使用自带jdk，而不是环境变量指定的，因此要删除系统自带jdk的软链接"
+  commands:
+  - "x_su -u ${host.adminUser} -p ${host.adminPswd}"
+  - "rm -rf /usr/bin/java"
   enabled: true
 - name: "修改系统用户.bashrc配置"
   description: "修改用户.bashrc配置，使每次切换用户时，执行source /etc/profile"
@@ -20,7 +26,7 @@ operations:
 - name: "切换root用户,修改.bashrc配置"
   description: "切换root用户，修改.bashrc配置,使每次切换用户时，执行source /etc/profile"
   commands:
-  - "x_su -u root -p ${host.adminPswd}"
+  - "x_su -u ${host.adminUser} -p ${host.adminPswd}"
   - "x_edit -t kv-s -p /root/.bashrc -d \"source=/etc/profile\""
   enabled: true
 - name: "添加jdk环境变量"

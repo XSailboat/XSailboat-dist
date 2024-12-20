@@ -20,7 +20,7 @@ operations:
 - name: "安装 pg_bigm"
   description: "安装 pg_bigm"
   commands:
-  - "x_su -u root -p ${host.adminPswd}"
+  - "x_su -u ${host.adminUser} -p ${host.adminPswd}"
   - "cd ${base_home}/pg_bigm-master && make USE_PGXS=1 PG_CONFIG=${base_home}/pgsql/bin/pg_config\
     \ install"
   enabled: true

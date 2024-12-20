@@ -1,0 +1,50 @@
+description: "认证中心安装"
+operations:
+- name: "上传认证中心安装包"
+  description: "确保产品目录存在，并上传认证中心安装包"
+  commands:
+  - "mkdir -p ${product_home}"
+  - "xc_upload -d ${product_home} ${modules.SailAC.pkg}"
+  enabled: false
+- name: "解压 认证中心 安装包"
+  description: "解压 认证中心 安装包"
+  commands:
+  - "x_untar -s ${product_home}/${modules.SailAC.pkg} -t ${product_home}/XSailboat\
+    \ -e bin"
+  enabled: false
+- name: "修改配置文件"
+  description: "修改配置文件"
+  commands:
+  - "x_edit -t kv -p ${product_home}/XSailboat/config/MicroService/SailAC/config.ini\
+    \ -d \"  ha.zookeeper.quorum=${:let result = \"\" ;for x in hosts {if(include(x.deployModuleNames,\
+    \ \"zookeeper\")){result = result + x.name + \":2181,\" ;}}result=string.substring(result,0,string.length(result)-1);result}\
+    \  & sys.rdb.conn.schema=${pg_schema}\""
+  - "x_edit -t kv -p ${product_home}/XSailboat/config/MicroService/common/sailboat-common.ini\
+    \ -d \"  ha.zookeeper.quorum=${:let result = \"\" ;for x in hosts {if(include(x.deployModuleNames,\
+    \ \"zookeeper\")){result = result + x.name + \":2181,\" ;}}result=string.substring(result,0,string.length(result)-1);result}\
+    \ & sys.authcenter.base_url=http://${host.ip}:${modules.SailAC.ports}/SailAC \
+    \ & sys.tdengine.conn.url=${:let result = \"\";for x in hosts {if(include(x.deployModuleNames,\
+    \ \"tdengine_firstEp\")){ result = \"jdbc:TAOS-RS://\" + x.ip + \":6041/{}\";}}result}\
+    \   & sys.tdengine.conn.secret=${taos_passwd}    & sys.rdb.conn.url= ${:let result\
+    \ = \"\";for x in hosts {if(include(x.deployModuleNames, \"postgreSql\")){ result\
+    \ = \"jdbc:postgresql://\" + x.ip + \":5432/zbd?currentSchema={}&binaryTransfer=true\"\
+    ;}}result}  & sys.rdb.conn.secret=${pg_passwd}\""
+  enabled: false
+- name: "修改启动脚本"
+  description: "修改启动脚本"
+  commands:
+  - "echo \"nohup java -Djava.system.class.loader=team.sailboat.commons.fan.lang.YClassLoader\
+    \ -Dfile.encoding=UTF-8 -jar -Xmx1g -Xms512m plugins/XMSStarter.jar -x_ini SailboatWeb/SailAC/SailAC.ini\
+    \ -ms_port ${modules.SailAC.ports}  -sys_env dev -init_zk -software_env sailboat\
+    \ &\"  > ${product_home}/XSailboat/bin/1_start_SailAC.sh"
+  enabled: false
+- name: "运行认证中心"
+  description: "运行认证中心"
+  commands:
+  - "chmod 755 /${product_home}/XSailboat/bin/1_start_SailAC.sh"
+  - "cd ${product_home}/XSailboat/bin && ./1_start_SailAC.sh"
+  enabled: true
+modules:
+- "SailAC"
+catalog: "10_认证中心"
+name: "13_2_认证中心_安装"

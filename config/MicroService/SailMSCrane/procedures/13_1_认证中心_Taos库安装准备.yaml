@@ -1,0 +1,13 @@
+description: "认证中心，taos数据库准备"
+operations:
+- name: "创建 taos 用户"
+  description: "创建 taos 用户"
+  commands:
+  - "x_sql -t taos -u root -p taosdata"
+  - "CREATE USER ${taos_user} PASS '${taos_passwd}';"
+  - "GRANT ALL ON *.* TO ${taos_user};"
+  enabled: true
+modules:
+- "tdengine_firstEp"
+catalog: "10_认证中心"
+name: "13_1_认证中心_Taos库安装准备"

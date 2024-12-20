@@ -5,39 +5,32 @@ operations:
   commands:
   - "echo \"SELINUX=disabled\" > /etc/sysconfig/selinux"
   - "echo \"SELINUXTYPE=targeted\" >> /etc/sysconfig/selinux"
-  enabled: true
+  enabled: false
 - name: "主机名修正"
   description: "临时修改主机名，使主机名在当前会话中生效；修改配置文件，重启后主机名永久生效"
   commands:
   - "hostname ${host.name}"
   - "x_set_hostname \"${host.name}\""
-  enabled: true
+  enabled: false
 - name: "创建平台用户"
   description: "如果用户已经存在也表示创建成功，如果不存在则会创建"
   commands:
   - "x_create_user -u ${host.sysUser} -p ${host.sysPswd}"
-  enabled: true
-- name: "上传配置信息"
-  description: "上传配置信息的同时，会在/usr/lib/systemd/system/下生成自启动所需的service服务"
-  commands:
-  - "x_set_host_profile {\\\"ip\\\":\\\"${host.ip}\\\",\\\"name\\\":\\\"${host.name}\\\
-    \",\\\"adminUser\\\":\\\"${host.adminUser}\\\",\\\"adminPswd\\\":\\\"${host.adminPswd}\\\"\
-    ,\\\"sysUser\\\":\\\"${host.sysUser}\\\",\\\"sysPswd\\\":\\\"${host.sysPswd}\\\",\\\"deployModuleNames\\\
-    \":[]}"
-  enabled: true
+  enabled: false
 - name: "切换代理所有者"
   description: "切换代理所有者"
   commands:
   - "chown -R ${host.sysUser}:${host.sysUser} /xcloud"
-  enabled: true
+  enabled: false
 - name: "自启动配置"
-  description: "将service服务从/usr/lib/systemd/system/复制到/etc/systemd/system/下，这是因为 Centos8 系统中，代理生成的service文件，被SELinux禁用了"
+  description: "将service服务从/usr/lib/systemd/system/复制到/etc/systemd/system/下，这是因为 Centos8\
+    \ 系统中，代理生成的service文件，被SELinux禁用了"
   commands:
   - "cp /usr/lib/systemd/system/SailInstaller.service /etc/systemd/system/SailInstaller.service"
   - "rm -rf /usr/lib/systemd/system/SailInstaller.service"
   - "systemctl daemon-reload"
   - "systemctl enable SailInstaller"
-  enabled: true
+  enabled: false
 - name: "重启系统"
   description: "重启系统"
   commands:

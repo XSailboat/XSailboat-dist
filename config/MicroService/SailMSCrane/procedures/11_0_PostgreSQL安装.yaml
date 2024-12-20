@@ -14,13 +14,13 @@ operations:
 - name: "编译安装pg库"
   description: "编译安装pg库"
   commands:
-  - "x_su -u root -p ${host.adminPswd}"
+  - "x_su -u ${host.adminUser} -p ${host.adminPswd}"
   - "cd ${base_home}/PG && make install"
   enabled: true
 - name: "修改所有者"
   description: "修改所有者"
   commands:
-  - "x_su -u root -p ${host.adminPswd}"
+  - "x_su -u ${host.adminUser} -p ${host.adminPswd}"
   - "chown -R ${host.sysUser}:${host.sysUser} ${base_home}/pgsql"
   enabled: true
 - name: "添加 PG 库环境变量"

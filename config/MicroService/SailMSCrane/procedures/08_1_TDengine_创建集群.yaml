@@ -3,7 +3,7 @@ operations:
 - name: "创建集群"
   description: "创建集群"
   commands:
-  - "x_sql -t taos -u root -p taosdata"
+  - "x_sql -t taos -u ${host.adminUser} -p taosdata"
   - "create dnode '${:let result = \"\";for x in hosts {if(include(x.deployModuleNames, \"tdengine_secondEp\")){result = result + x.name;}}result}';"
   - "${:let result = \"\";for x in hosts {if(include(x.deployModuleNames, \"tdengine_other\")){result = result + \"create dnode '\" +  x.name + \"'; \";}}result}"
   enabled: true

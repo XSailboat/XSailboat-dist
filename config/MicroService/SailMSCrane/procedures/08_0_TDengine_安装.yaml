@@ -20,20 +20,20 @@ operations:
 - name: "安装 TDengine"
   description: "切换管理员用户,安装 TDengine"
   commands:
-  - "x_su -u root -p ${host.adminPswd}"
+  - "x_su -u ${host.adminUser} -p ${host.adminPswd}"
   - "cd ${base_home}/TDengine && ./install.sh && x_expect_err -w 5 -s \"Created symlink\""
   enabled: true
 - name: "移除系统服务"
   description: "切换管理员用户,移除系统服务"
   commands:
-  - "x_su -u root -p ${host.adminPswd}"
+  - "x_su -u ${host.adminUser} -p ${host.adminPswd}"
   - "systemctl disable taosadapter"
   - "systemctl disable taosd"
   enabled: true
 - name: "移除默认目录"
   description: "切换管理员用户,移除默认目录"
   commands:
-  - "x_su -u root -p ${host.adminPswd}"
+  - "x_su -u ${host.adminUser} -p ${host.adminPswd}"
   - "rm -rf /var/lib/taos"
   - "rm -rf /var/log/taos"
   - "rm -rf /usr/local/taos/data"
@@ -42,7 +42,7 @@ operations:
 - name: "修改所有者"
   description: "修改所有者"
   commands:
-  - "x_su -u root -p ${host.adminPswd}"
+  - "x_su -u ${host.adminUser} -p ${host.adminPswd}"
   - "chown -R ${host.sysUser}:${host.sysUser} /usr/local/taos"
   - "chown -R ${host.sysUser}:${host.sysUser} /etc/taos"
   enabled: true
@@ -86,7 +86,7 @@ operations:
 - name: "移除安装包目录"
   description: "移除安装包目录"
   commands:
-  - "x_su -u root -p ${host.adminPswd}"
+  - "x_su -u ${host.adminUser} -p ${host.adminPswd}"
   - "rm -rf ${base_home}/TDengine"
   enabled: true
 modules:

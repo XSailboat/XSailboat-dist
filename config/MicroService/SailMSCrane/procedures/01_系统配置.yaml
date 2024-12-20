@@ -4,33 +4,34 @@ operations:
   description: "关闭IPv6，只使用IPv4"
   commands:
   - "x_close ipv6"
-  enabled: true
+  enabled: false
 - name: "关闭虚拟网卡"
   description: "关闭虚拟网卡，避免多网卡造成IP问题"
   commands:
   - "x_close v_network"
-  enabled: true
+  enabled: false
 - name: "添加 主机-IP 映射"
   description: "添加 主机-IP 映射"
   commands:
   - "x_add_hosts \"${all_ip_host}\""
-  enabled: true
+  enabled: false
 - name: "关闭防火墙"
   description: "关闭firewalld防火墙"
   commands:
   - "x_close firewall"
-  enabled: true
+  enabled: false
 - name: "修改文件最大句柄"
   description: "修改文件最大句柄"
   commands:
   - "x_set_limit \"* soft nofile ${soft_nofile} * hard nofile ${hard_nofile} * soft\
     \ noproc ${soft_noproc} * hard noproc ${hard_noproc}\""
-  enabled: true
+  enabled: false
 - name: "SSH无密码登录"
   description: "SSH无密码登录"
   commands:
-  - "x_add_ssh ${:let result = \"\" ;for x in hosts { result = result + x.sysUser + \"@\" + x.name + \"@\" + x.sysPswd + \" \";}result}"
-  enabled: true
+  - "x_add_ssh ${:let result = \"\" ;for x in hosts { result = result + x.sysUser\
+    \ + \"@\" + x.name + \"@\" + x.sysPswd + \" \";}result}"
+  enabled: false
 - name: "重启系统"
   description: "切换管理员用户，重启系统"
   commands:
@@ -40,3 +41,4 @@ operations:
 modules:
 - "ALL"
 catalog: "01_系统环境"
+name: "01_系统配置"
